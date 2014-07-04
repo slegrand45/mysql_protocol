@@ -1,0 +1,55 @@
+Mysql Protocol, MySQL client protocol for OCaml.
+Copyright (C) 2011, Stephane Legrand <stephleg@free.fr>.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 of the 
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public 
+License along with this program. If not, see 
+<http://www.gnu.org/licenses/>.
+
+Requirements:
+   Bitstring: http://code.google.com/p/bitstring/
+   Cryptokit: http://forge.ocamlcore.org/projects/cryptokit/
+
+   Optional, oUnit: http://ounit.forge.ocamlcore.org/ (to run the tests suite).
+
+
+To build:
+
+   make all		# build the library.
+
+Other targets:
+
+   make doc		# optional, build the HTML documentation. 
+   			# The files will be available in "_build/src.docdir/".
+
+   make tests		# optional, build the tests suite. 
+   			# Executables will be available in "_build/test/" 
+			# ("test.byte" and "test.native").
+
+To install (as root):
+
+   make install		# install the mysql protocol library. 
+   			# Use "ocamlfind" to install in "site-lib" directory.
+
+To try the example(s):
+
+   make example		# optional, build the example(s).
+   			# Executable(s) will be available in "_build/examples/".
+
+To clean:
+
+   make clean		# remove the build directory.
+
+To deinstall:
+
+   make deinstall	# remove the mysql protocol library. 
+   			# Use "ocamlfind" to deinstall from "site-lib" directory.

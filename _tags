@@ -1,0 +1,5 @@
+<src/*.ml> or <src/*.mli> or "src/mysql_protocol.cm*" : syntax(camlp4o),package(num),package(unix),package(cryptokit),package(bitstring),package(bitstring.syntax),syntax(bitstring.syntax)
+<src/mp_*.cm*>: for-pack(Mysql_protocol)
+<test/*.ml> or <test/*.mli> or "test/test.byte" or "test/test.native" : syntax(camlp4o),warn_A,warn_e,package(num),package(cryptokit),package(oUnit),package(bitstring),package(bitstring.syntax),syntax(bitstring.syntax)
+<examples/*.ml> or "examples/run.byte" or "examples/run.native" : package(mysql_protocol)
+<benchmarks/*.ml> or <benchmarks/*.mli> or "benchmarks/bench.byte" or "benchmarks/bench.native" : package(mysql),package(mysql_protocol)

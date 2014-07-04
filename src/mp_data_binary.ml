@@ -1,0 +1,266 @@
+let data_value_to_native_value_date_time_types field_type v = 
+  match field_type with
+  | Mp_field_packet.Field_type_datetime 
+  | Mp_field_packet.Field_type_timestamp 
+  | Mp_field_packet.Field_type_date -> (
+      let length = Bitstring.bitstring_length v in
+      let parts = 
+	if (length = 0) then
+	  ((0, 0, 0), (0, 0, 0, Int64.zero))
+	else
+	  bitmatch v with
+	    | { year : 2 * 8 : int, unsigned, littleendian;
+		rest : -1 : bitstring } -> (
+		  if (Bitstring.bitstring_length rest > 0) then
+		    bitmatch rest with
+		      | { month : 1 * 8 : int, unsigned, littleendian;
+			  day : 1 * 8 : int, unsigned, littleendian;
+			  rest : -1 : bitstring } -> (
+			    if (Bitstring.bitstring_length rest > 0) then
+			      bitmatch rest with
+			        | { hour : 1 * 8 : int, unsigned, littleendian;
+				    min : 1 * 8 : int, unsigned, littleendian;
+				    sec : 1 * 8 : int, unsigned, littleendian;
+				    rest : -1 : bitstring } -> (
+				      if (Bitstring.bitstring_length rest > 0) then
+					bitmatch rest with
+					  | { subsecond : Mp_bitstring.compute32 : int, unsigned, littleendian } -> (
+					      ((year, month, day), (hour, min, sec, subsecond))
+					     )
+				      else
+					((year, month, day), (hour, min, sec, Int64.zero))
+                                    )
+			    else
+			      ((year, month, day), (0, 0, 0, Int64.zero))
+			   )
+		  else
+		    ((year, 0, 0), (0, 0, 0, Int64.zero))
+		 )
+      in
+      let ((year, month, day), (hour, min, sec, subsec)) = parts in
+      match field_type with
+      | Mp_field_packet.Field_type_datetime -> Mp_data.Datetime ((year, month, day), (hour, min, sec, subsec))
+      | Mp_field_packet.Field_type_timestamp -> Mp_data.Timestamp ((year, month, day), (hour, min, sec, subsec))
+      | Mp_field_packet.Field_type_date -> Mp_data.Date (year, month, day)
+      | _ -> assert false
+     )
+  | Mp_field_packet.Field_type_time -> (
+      let length = Bitstring.bitstring_length v in
+      if (length = 0) then
+	Mp_data.Time (Mp_data.Positive, 0, 0, 0, Int64.zero)
+      else
+	bitmatch v with
+          | { sign : 1 * 8 : int, unsigned, littleendian;
+	      rest : -1 : bitstring } -> (
+		let pos_or_neg = 
+		  match sign with 
+		  | 1 -> Mp_data.Negative
+		  | 0 -> Mp_data.Positive
+		  | _ -> assert false
+		in
+		if (Bitstring.bitstring_length rest > 0) then
+		  bitmatch rest with
+		    | { day : Mp_bitstring.compute32 : int, unsigned, littleendian;
+			rest : -1 : bitstring } -> (
+			  let hour_day = Int64.mul day (Int64.of_int 24) in
+			  (* cast should be ok, documentation says : 
+			     "TIME values may range from '-838:59:59' to '838:59:59'" *)
+			  let hour_day = Int64.to_int hour_day in
+			  if (Bitstring.bitstring_length rest > 0) then
+			    bitmatch rest with
+			      | { hour : 1 * 8 : int, unsigned, littleendian;
+				  min : 1 * 8 : int, unsigned, littleendian;
+				  sec : 1 * 8 : int, unsigned, littleendian;
+				  rest : -1 : bitstring } -> (
+				    if (Bitstring.bitstring_length rest > 0) then
+				      bitmatch rest with
+					| { subsecond : Mp_bitstring.compute32 : int, unsigned, littleendian } -> (
+					    Mp_data.Time (pos_or_neg, hour + hour_day, min, sec, subsecond)
+					   )
+				    else
+				      Mp_data.Time (pos_or_neg, hour + hour_day, min, sec, Int64.zero)
+				   )
+                          else
+			    Mp_data.Time (pos_or_neg, 0 + hour_day, 0, 0, Int64.zero)
+			 )
+		else
+		  Mp_data.Time (pos_or_neg, 0, 0, 0, Int64.zero)
+	       )
+	   )
+  | _ -> assert false
+;;
+
+let data_value_to_native_value v field = 
+  let field_type = field.Mp_field_packet.field_type in
+  match field_type with
+  (* /!\ : should not happen because null values are sent with the null bitfield *)
+  | Mp_field_packet.Field_type_null ->
+      Mp_data.Null
+  | Mp_field_packet.Field_type_longlong -> (
+      bitmatch v with
+        | { d : 8 * 8 : int, littleendian } ->
+	    let field_flags = field.Mp_field_packet.field_flags in
+	    let bi = Big_int.big_int_of_int64 d in
+	    let bi = 
+	      if ( (List.mem Mp_field_packet.Field_flag_unsigned field_flags)
+		     && (Big_int.sign_big_int bi = -1) ) then
+		Big_int.add_big_int (Big_int.power_int_positive_int 2 64) bi
+	      else
+		bi
+	    in
+	    Mp_data.Longlongint bi
+    )
+  | Mp_field_packet.Field_type_long -> (
+      let field_flags = field.Mp_field_packet.field_flags in
+      bitmatch v with
+        | { d : Mp_bitstring.compute32 : int, littleendian } ->
+	    if (List.mem Mp_field_packet.Field_flag_unsigned field_flags) then
+	      Mp_data.Longint d
+	    else
+	      if (Int64.compare d (Int64.of_string "2147483647") > 0) then
+		Mp_data.Longint (Int64.sub d (Int64.of_string "4294967296"))
+	      else
+		Mp_data.Longint d
+    )
+  | Mp_field_packet.Field_type_short -> (
+      let field_flags = field.Mp_field_packet.field_flags in
+      bitmatch v with
+        | { d : 2 * 8 : int, littleendian } ->
+	    if (List.mem Mp_field_packet.Field_flag_unsigned field_flags) then
+	      Mp_data.Smallint d
+	    else
+	      if (d > 32767) then
+		Mp_data.Smallint (d - 65536)
+	      else
+		Mp_data.Smallint d
+    )
+  | Mp_field_packet.Field_type_tiny -> (
+      let field_flags = field.Mp_field_packet.field_flags in
+	bitmatch v with
+	  | { d : 1 * 8 : int, littleendian } ->
+	      if (List.mem Mp_field_packet.Field_flag_unsigned field_flags) then
+		Mp_data.Tinyint d
+	      else
+		if (d > 127) then 
+		  Mp_data.Tinyint (d - 256)
+		else
+		  Mp_data.Tinyint d
+    )
+  | Mp_field_packet.Field_type_float -> (
+      bitmatch v with
+        | { d : 4 * 8 : int, littleendian } ->
+	    Mp_data.Float (Int32.float_of_bits d)
+    )
+  | Mp_field_packet.Field_type_double -> (
+      bitmatch v with
+        | { d : 8 * 8 : int, littleendian } ->
+	    Mp_data.Double (Int64.float_of_bits d)
+    )
+  | Mp_field_packet.Field_type_int24 -> (
+      let field_flags = field.Mp_field_packet.field_flags in
+      (* 4 bytes with 0x00 or 0xff for the last one 
+	 so we only need the first 3 bytes 
+       *)
+      bitmatch v with
+        | { d : 3 * 8 : int, littleendian } ->
+	    if (List.mem Mp_field_packet.Field_flag_unsigned field_flags) then
+		Mp_data.Int24 d
+	      else
+		if (d > 8388607) then 
+		  Mp_data.Int24 (d - 16777216)
+		else
+		  Mp_data.Int24 d
+    )
+  | Mp_field_packet.Field_type_year -> (
+      bitmatch v with
+        | { d : 2 * 8 : int, littleendian } ->
+	    Mp_data.Year d
+    )
+  | Mp_field_packet.Field_type_newdecimal -> (
+      let length = Bitstring.bitstring_length v in
+      let nb_bytes = length / 8 in
+      bitmatch v with
+        | { d : length : string } ->
+	    let decimals = field.Mp_field_packet.field_decimals in
+	    let part_i_s = String.sub d 0 (nb_bytes - 1 - decimals) in
+	    let part_d_s = String.sub d (nb_bytes - decimals) decimals in
+	    let i = part_i_s ^ part_d_s in
+	    let i = Big_int.big_int_of_string i in
+	    let i = Num.num_of_big_int i in
+	    let div = Big_int.power_int_positive_int 10 decimals in
+	    let div = Num.num_of_big_int div in
+	    Mp_data.Decimal (Num.div_num i div)
+    )
+  | Mp_field_packet.Field_type_string -> (
+      let length = Bitstring.bitstring_length v in
+      bitmatch v with
+        | { d : length : string } -> (
+	    let field_flags = field.Mp_field_packet.field_flags in
+	    if (List.mem Mp_field_packet.Field_flag_enum field_flags) then 
+	      Mp_data.Enum d
+	    else if (List.mem Mp_field_packet.Field_flag_set field_flags) then
+	      Mp_data.Set d
+	    else if (List.mem Mp_field_packet.Field_flag_binary field_flags) then
+	      let b = Buffer.create (String.length d) in
+	      let () = Buffer.add_string b d in
+	      Mp_data.Binary b
+	    else
+	      Mp_data.String d
+	   )
+    )
+  (* /!\ : should not happen because set is sent as a string *)
+  | Mp_field_packet.Field_type_set -> (
+      let length = Bitstring.bitstring_length v in
+      bitmatch v with
+	| { d : length : string } -> 
+	    Mp_data.Set d
+    )
+  (* /!\ : should not happen because enum is sent as a string *)
+  | Mp_field_packet.Field_type_enum -> (
+      let length = Bitstring.bitstring_length v in
+      bitmatch v with
+	| { d : length : string } -> 
+	    Mp_data.Enum d
+    )
+  | Mp_field_packet.Field_type_var_string -> (
+      let length = Bitstring.bitstring_length v in
+      bitmatch v with
+        | { d : length : string } -> 
+	    let field_flags = field.Mp_field_packet.field_flags in
+	    if (List.mem Mp_field_packet.Field_flag_binary field_flags) then
+	      let b = Buffer.create (String.length d) in
+	      let () = Buffer.add_string b d in
+	      Mp_data.Varbinary b
+	    else
+	      Mp_data.Varstring d
+    )
+  | Mp_field_packet.Field_type_varchar -> (
+      (* TODO: add varchar to tests *)
+      let length = Bitstring.bitstring_length v in
+      bitmatch v with
+        | { d : length : string } -> Mp_data.Varchar d
+    )
+  | Mp_field_packet.Field_type_bit -> (
+      let length = Bitstring.bitstring_length v in
+      bitmatch v with
+        | { d : length : bitstring } -> Mp_data.Bit d
+    )
+  | Mp_field_packet.Field_type_tiny_blob
+  | Mp_field_packet.Field_type_medium_blob
+  | Mp_field_packet.Field_type_long_blob
+  | Mp_field_packet.Field_type_blob -> (
+      let length = Bitstring.bitstring_length v in
+      bitmatch v with
+        | { d : length : string } ->
+	    let b = Buffer.create length in
+	    let () = Buffer.add_string b d in
+	    Mp_data.Blob b
+    )
+  | Mp_field_packet.Field_type_geometry -> (* opaque type *)
+      Mp_data.Geometry v
+  | Mp_field_packet.Field_type_datetime 
+  | Mp_field_packet.Field_type_timestamp 
+  | Mp_field_packet.Field_type_date 
+  | Mp_field_packet.Field_type_time ->
+      data_value_to_native_value_date_time_types field_type v
+;;

@@ -1,0 +1,5 @@
+src/mysql_protocol.cmo
+src/mysql_protocol.cmx
+src/mysql_protocol.cmi
+src/mysql_protocol.cma
+src/mysql_protocol.cmxa

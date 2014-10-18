@@ -106,6 +106,7 @@ type prepare_result = {
 type result = private 
     Result_set of Mp_result_set_packet.result_select (** Result of SELECT *)
   | Result_ok of dml_dcl_result (** Result of INSERT, UPDATE, GRANT... statements *)
+  | Result_multiple of result list (** Result of CALL procedure *)
 ;;
 
 (** 
@@ -207,6 +208,11 @@ val get_result : execute_result -> result
    Extract the set part from an executed result (for SELECT result).
 *)
 val get_result_set : execute_result -> Mp_result_set_packet.result_select
+
+(**
+   Extract the multiple part from an executed result (for CALL result).
+*)
+val get_result_multiple : execute_result -> result list
 
 (**
    Extract the ok part from an executed result (for INSERT, UPDATE, GRANT... result).

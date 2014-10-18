@@ -23,16 +23,34 @@ let eof_packet_to_string p =
 ;;
 
 type flag_server = 
-    Server_more_results_exists
+    Server_status_in_trans
+  | Server_status_autocommit
+  | Server_more_results_exists
+  | Server_status_no_good_index_used
+  | Server_status_no_index_used
   | Server_status_cursor_exists
   | Server_status_last_row_sent
+  | Server_status_db_dropped
+  | Server_status_no_backslash_escapes
+  | Server_status_metadata_changed
+  | Server_query_was_slow
+  | Server_ps_out_params
 ;;
 
 let flag_server_to_int f = 
   match f with
-    Server_more_results_exists -> 8
-  | Server_status_cursor_exists -> 64
-  | Server_status_last_row_sent -> 128
+    Server_status_in_trans -> 0x0001
+  | Server_status_autocommit -> 0x0002
+  | Server_more_results_exists -> 0x0008
+  | Server_status_no_good_index_used -> 0x0010
+  | Server_status_no_index_used -> 0x0020
+  | Server_status_cursor_exists -> 0x0040
+  | Server_status_last_row_sent -> 0x0080
+  | Server_status_db_dropped -> 0x0100
+  | Server_status_no_backslash_escapes -> 0x0200
+  | Server_status_metadata_changed -> 0x0400
+  | Server_query_was_slow -> 0x0800
+  | Server_ps_out_params -> 0x1000
 ;;
 
 let status_has_flag status flag = 

@@ -1,5 +1,5 @@
 name = "mysql_protocol"
-version = "0.9"
+version = "1.0"
 description = "OCaml MySQL Protocol"
 requires = "unix cryptokit bitstring bitstring.syntax"
 archive(byte) = "mysql_protocol.cma"

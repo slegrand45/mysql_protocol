@@ -24,6 +24,8 @@ module type FIXTURE = sig
   val records_bigvarchar : Mp_data.native_data list list
   val records_bigvarbinary : Mp_data.native_data list list
   val records_manyblobs : Mp_data.native_data list list
+  val records_proc_one_result : Mp_data.native_data list list
+  val records_proc_multiple_results : Mp_data.native_data list list
   val ok_value_iter : string
   val sql : string
 end;;

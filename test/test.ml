@@ -15,7 +15,7 @@ let version_55 = 5531;;
 
 let host_56 = "192.168.1.20";;
 let addr_56 = Unix.inet_addr_of_string host_56;;
-let version_56 = 5611;;
+let version_56 = 5621;;
 
 
 let port = 3306;;
@@ -90,6 +90,7 @@ let run_tests host sql encoding =
   in
   let () = init host sql F.db_name in
   let sockaddr = Unix.ADDR_INET(addr, port) in
+    
   let config = Mp_client.configuration ~user:db_user ~password:db_password ~sockaddr:sockaddr ~charset:encoding ~databasename:F.db_name () in
   let connection = Mp_client.connect ~configuration:config ~force:true () in
   let () = Mp_client.use_database ~connection:connection ~databasename:F.db_name in

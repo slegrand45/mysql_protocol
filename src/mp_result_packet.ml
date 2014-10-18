@@ -15,7 +15,7 @@ let result_packet_to_string p =
   | Result_packet_error r -> Mp_error_packet.error_packet_to_string r 
 ;;
 
-let result_packet ic oc filter iter return_all_raw_mysql_data type_sent fields = 
+let rec result_packet ic oc filter iter return_all_raw_mysql_data type_sent fields acc = 
   let (packet_length, packet_number, bits) = Mp_packet.extract_packet ic oc in
   bitmatch bits with
 | { type_packet : 1*8 : int, unsigned, bigendian;
@@ -24,28 +24,34 @@ let result_packet ic oc filter iter return_all_raw_mysql_data type_sent fields =
 	match type_sent with
 	| Mp_com.Prepare -> (
 	    let p = Mp_ok_prepare_packet.ok_prepare_packet rest ic oc in
-	    (Result_packet_prepare_ok p, packet_number)
+	    (Result_packet_prepare_ok p, packet_number) :: acc
 	   )
 	| Mp_com.Fetch -> (
-	    let p = Mp_result_set_packet.result_set_packet packet_length (Int64.of_int type_packet) 
+	    let (_, p) = Mp_result_set_packet.result_set_packet packet_length (Int64.of_int type_packet) 
 		rest ic oc filter iter return_all_raw_mysql_data type_sent fields in
-	    (Result_packet_result_set p, packet_number)
+	    (Result_packet_result_set p, packet_number) :: acc
 	   )
 	| _ -> (
 	    let p = Mp_ok_packet.ok_packet rest in
-	    (Result_packet_ok p, packet_number)
+	    (Result_packet_ok p, packet_number) :: acc
 	   )
        )
       else if (type_packet >= 1 && type_packet <= 250 ) then
-	let p = Mp_result_set_packet.result_set_packet packet_length (Int64.of_int type_packet) 
+	let (server_more_results_exists, p) = 
+	  Mp_result_set_packet.result_set_packet packet_length (Int64.of_int type_packet) 
 	    rest ic oc filter iter return_all_raw_mysql_data type_sent fields in
-	(Result_packet_result_set p, packet_number)
+	if (server_more_results_exists) then (
+	  result_packet ic oc filter iter return_all_raw_mysql_data type_sent fields 
+	    ((Result_packet_result_set p, packet_number) :: acc)
+	 ) else (
+	  (Result_packet_result_set p, packet_number) :: acc
+	 )
       else if type_packet = 0xfe then
 	let p = Mp_eof_packet.eof_packet_bits rest in
-	(Result_packet_eof p, packet_number)
+	(Result_packet_eof p, packet_number) :: acc
       else if type_packet = 0xff then
 	let p = Mp_error_packet.error_packet rest in
-	(Result_packet_error p, packet_number)
+	(Result_packet_error p, packet_number) :: acc
       else
 	failwith "Bad result packet"
 ;;

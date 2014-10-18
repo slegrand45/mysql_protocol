@@ -4,7 +4,7 @@ OCAMLFIND=ocamlfind
 TAR=tar
 CP=cp
 RM=rm
-LATEX=pdflatex
+LATEX=pdflatex -shell-escape
 
 all:
 	$(OCAMLBUILD) $(OCAMLBUILD_OPTIONS) src.otarget

@@ -7,6 +7,7 @@ module Mp_client = Mysql_protocol.Mp_client;;
 module Mp_data = Mysql_protocol.Mp_data;;
 module Mp_execute = Mysql_protocol.Mp_execute;;
 module Mp_result_set_packet = Mysql_protocol.Mp_result_set_packet;;
+module Mp_capabilities = Mysql_protocol.Mp_capabilities;;
 
 let run() = 
   (* helper function to display ok result (INSERT, UPDATE... result) *)
@@ -52,7 +53,7 @@ let run() =
   let db_name = "test_ocaml_ocmp_utf8" in
 
   (* configuration *)
-  let config = Mp_client.configuration  ~user:db_user ~password:db_password ~sockaddr:sockaddr ~databasename:db_name () in
+  let config = Mp_client.configuration ~user:db_user ~password:db_password ~sockaddr:sockaddr ~databasename:db_name () in
 
   (* connection *)
   let connection = Mp_client.connect ~configuration:config () in
@@ -147,8 +148,30 @@ let run() =
     with
     | Mp_client.Error error ->
 	print_newline ();
-	print_endline ("This is a test to show how to catch a MySQL error, the exception is: " ^ (Mp_client.error_exception_to_string error))
+	print_endline ("This is a test to show how to catch a MySQL error, the exception is: " ^ (Mp_client.error_exception_to_string error));
+	print_newline ();
   in
+
+  (* create and call a procedure *)
+  let sql = "DROP PROCEDURE IF EXISTS ocmp_proc" in
+  let stmt = Mp_client.create_statement_from_string sql in
+  let _ = Mp_client.execute ~connection:connection ~statement:stmt () in 
+  let sql = "CREATE PROCEDURE ocmp_proc() BEGIN SELECT * FROM ocmp_table; END" in
+  let stmt = Mp_client.create_statement_from_string sql in
+  let r = Mp_client.execute ~connection:connection ~statement:stmt () in 
+  let r = Mp_client.get_result_ok r in
+  let () = print_result sql r in
+  let sql = "CALL ocmp_proc()" in
+  let stmt = Mp_client.create_statement_from_string sql in
+  let r = Mp_client.execute ~connection:connection ~statement:stmt () in
+  let r = Mp_client.get_result_multiple r in
+  let f e = 
+    match e with
+    | Mp_client.Result_set rs ->
+	print_set sql rs
+    | _ -> ()
+  in
+  let () = List.iter f r in
 
   (* disconnect *)
   let () = Mp_client.disconnect ~connection:connection in

@@ -747,11 +747,68 @@ let test_filter_iter connection records ok_value_iter =
 	~cmp:records_equals
 	( (fields, [List.nth records 0]) )
 	(Test_query.try_query 
-	 ~f:( (Mp_client.get_result_set(Mp_client.execute ~connection:connection ~statement:stmt ~filter:(Some filter) ~iter:(Some (iter acc)) ())).Mp_result_set_packet.rows ) 
-	 ~sql:sql)
+	 ~f:( (Mp_client.get_result_set(Mp_client.execute ~connection:connection ~statement:stmt ~filter:(Some filter) ~iter:(Some (iter acc)) ())).Mp_result_set_packet.rows) ~sql:sql)
     in
     assert_equal ~msg:sql 
       ok_value_iter !acc
+  in
+  ()
+;;
+
+let test_proc_one_result connection records_proc_one_result =
+  let first e = 
+    match e with
+    | first::_ -> (
+	match first with
+	| Mp_client.Result_set x -> x.Mp_result_set_packet.rows
+	| _ -> assert false
+       )
+    | _ -> assert false
+  in
+  let () = 
+    let sql = "CALL test_ocmp_proc_one_result" in
+    let stmt = Mp_client.create_statement_from_string sql in
+    assert_equal ~msg:sql 
+      ~cmp:records_equals
+      ([("oh", 0); ("abc", 1)], records_proc_one_result)
+      (Test_query.try_query
+	 ~f:(first(Mp_client.get_result_multiple(Mp_client.execute ~connection:connection ~statement:stmt ())))
+	 ~sql:sql)
+  in
+  ()
+;;
+
+let test_proc_multiple_results connection records_proc_multiple_results = 
+  let () = 
+    let cmp ok test = 
+      (records_equals (List.nth ok 0) (List.nth test 0))
+	&& (records_equals (List.nth ok 1) (List.nth test 1))
+	&& (records_equals (List.nth ok 2) (List.nth test 2))
+    in
+    let all e = 
+      match e with
+      | first::second::third::_ -> (
+	  let f r = 
+	    match r with
+	    | Mp_client.Result_set x -> x.Mp_result_set_packet.rows
+	    | _ -> assert false
+	  in
+	  [f first; f second; f third]
+	 )
+      | _ -> assert false
+    in
+    let sql = "CALL test_ocmp_proc_multiple_results" in
+    let stmt = Mp_client.create_statement_from_string sql in
+    assert_equal ~msg:sql 
+      ~cmp:cmp
+      ([
+       ([("one", 0); ("a", 1)], [List.nth records_proc_multiple_results 0]);
+       ([("two", 0); ("b", 1)], [List.nth records_proc_multiple_results 1]);
+       ([("three", 0); ("c", 1)], [List.nth records_proc_multiple_results 2])
+     ])
+      (Test_query.try_query 
+	 ~f:(all(Mp_client.get_result_multiple(Mp_client.execute ~connection:connection ~statement:stmt ()))) 
+	 ~sql:sql)
   in
   ()
 ;;
@@ -799,6 +856,8 @@ let test host connection encoding _ =
   let () = test_date connection (F.records_date version) version in
   let () = test_bigstring connection F.records_bigstring F.records_bigvarchar F.records_bigvarbinary in
   let () = test_manyblobs connection F.records_manyblobs F.db_name in
+  let () = test_proc_one_result connection F.records_proc_one_result in
+  let () = test_proc_multiple_results connection F.records_proc_multiple_results in
   let () = test_filter_iter connection F.records F.ok_value_iter in
   ()
 ;;

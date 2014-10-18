@@ -51,6 +51,7 @@ type prepare_result = {
 type result = 
     Result_set of Mp_result_set_packet.result_select
   | Result_ok of dml_dcl_result
+  | Result_multiple of result list
 ;;
 
 type executable_statement = 
@@ -95,7 +96,8 @@ let configuration ~user ~password ~sockaddr ?(databasename = "") ?(max_packet_si
      Mp_capabilities.Client_protocol_41;
      Mp_capabilities.Client_transactions;
      Mp_capabilities.Client_secure_connection;
-     Mp_capabilities.Client_local_files]
+     Mp_capabilities.Client_local_files;
+     Mp_capabilities.Client_multi_results]
   in
   let default_capabilities = 
     if (String.length databasename > 0) then
@@ -122,16 +124,20 @@ let configuration ~user ~password ~sockaddr ?(databasename = "") ?(max_packet_si
 let send_packet ~packet ~ic ~oc ~sent ?(filter = None) ?(iter = None) ?(return_all_raw_mysql_data = false) ?(fields = []) () =
   let () = Bitstring.bitstring_to_chan packet oc in
   let () = flush oc in
-  let (result, packet_number) = Mp_result_packet.result_packet ic oc filter iter return_all_raw_mysql_data sent fields in
+  let result = Mp_result_packet.result_packet ic oc filter iter return_all_raw_mysql_data sent fields [] in
   match result with
-  | Mp_result_packet.Result_packet_error e -> (
-      raise (Error {
-	     client_error_errno = e.Mp_error_packet.error_errno;
-	     client_error_sqlstate = e.Mp_error_packet.error_sqlstate;
-	     client_error_message = e.Mp_error_packet.error_message
-	   })
+  | [] -> failwith "No result (send_packet)"
+  | (last_r, last_pn) :: l as r -> ( 
+      match last_r with
+      | Mp_result_packet.Result_packet_error e -> (
+	  raise (Error {
+		 client_error_errno = e.Mp_error_packet.error_errno;
+		 client_error_sqlstate = e.Mp_error_packet.error_sqlstate;
+		 client_error_message = e.Mp_error_packet.error_message
+	       })
+	 )
+      | _ -> r
      )
-  | _ -> (result, packet_number)
 ;;
 
 let connect ~configuration ?(force = false) () = 
@@ -151,11 +157,15 @@ let connect ~configuration ?(force = false) () =
 	  ~databasename:configuration.databasename
 	  ~auth_plugin_name:auth_plugin_name
       in
-      let (result, packet_number) = send_packet ~packet:client_auth ~ic:ic ~oc:oc ~sent:Mp_com.Authentication () in
+      let result = send_packet ~packet:client_auth ~ic:ic ~oc:oc ~sent:Mp_com.Authentication () in
       match result with
-      | Mp_result_packet.Result_packet_ok _ -> (Some (ic, oc), Some handshake)
-      | Mp_result_packet.Result_packet_eof _ -> failwith "Old authentication scheme not supported"
-      | _ -> failwith "Bad connect"
+      | [] -> failwith "No result (connect)"
+      | (result, _)::_ -> (
+	  match result with
+	  | Mp_result_packet.Result_packet_ok _ -> (Some (ic, oc), Some handshake)
+	  | Mp_result_packet.Result_packet_eof _ -> failwith "Old authentication scheme not supported"
+	  | _ -> failwith "Bad connect"
+	 )
      )
     else 
       (None, None)
@@ -198,19 +208,27 @@ let reset_session ~connection =
       ~databasename:configuration.databasename ~charset_number:configuration.charset_number 
       ~auth_plugin_name:auth_plugin_name in
   let change_user = Mp_com.com_change_user ic oc bits in
-  let (result, packet_number) = send_packet ~packet:change_user ~ic:ic ~oc:oc ~sent:Mp_com.Change_user () in 
+  let result = send_packet ~packet:change_user ~ic:ic ~oc:oc ~sent:Mp_com.Change_user () in 
   match result with
-  | Mp_result_packet.Result_packet_ok _ -> ()
-  | _ -> failwith "Unable to reset session (bad answer)"
+  | [] -> failwith "No result (reset_session)"
+  | (result, _)::_ -> (
+      match result with
+      | Mp_result_packet.Result_packet_ok _ -> ()
+      | _ -> failwith "Unable to reset session (bad answer)"
+     )
 ;;
 
 let use_database ~connection ~databasename = 
   let (ic, oc) = get_ic_oc ~connection:connection in
   let use_db = Mp_com.com_init_db ic oc databasename in
-  let (result, packet_number) = send_packet ~packet:use_db ~ic:ic ~oc:oc ~sent:Mp_com.Init_db () in 
+  let result = send_packet ~packet:use_db ~ic:ic ~oc:oc ~sent:Mp_com.Init_db () in 
   match result with
-  | Mp_result_packet.Result_packet_ok _ -> ()
-  | _ -> failwith "Bad use database"
+  | [] -> failwith "No result (use_database)"
+  | (result, _)::_ -> (
+      match result with
+      | Mp_result_packet.Result_packet_ok _ -> ()
+      | _ -> failwith "Bad use database"
+     )
 ;;
 
 let query ~connection ~sql ?(filter = None) ?(iter = None) ?(return_all_raw_mysql_data = false) () = 
@@ -221,39 +239,44 @@ let query ~connection ~sql ?(filter = None) ?(iter = None) ?(return_all_raw_mysq
 
 let prepare ~connection ~statement = 
   match statement with 
-  | Created_statement sql ->
+  | Created_statement sql -> (
       let (ic, oc) = get_ic_oc ~connection:connection in
       let query = Mp_com.com_prepare ic oc sql in
-      let (result_set, packet_number) = send_packet ~packet:query ~ic:ic ~oc:oc ~sent:Mp_com.Prepare () in
-      let result = 
-	match result_set with
-	| Mp_result_packet.Result_packet_prepare_ok p -> (
-	    { prepare_handler = p.Mp_ok_prepare_packet.ok_prepare_handler;
-	      prepare_nb_columns = p.Mp_ok_prepare_packet.ok_prepare_nb_columns;
-	      prepare_nb_parameters = p.Mp_ok_prepare_packet.ok_prepare_nb_parameters;
-	      prepare_warning_count = p.Mp_ok_prepare_packet.ok_prepare_warning_count;
-	      prepare_parameters_fields = p.Mp_ok_prepare_packet.ok_prepare_parameters_fields;
-	      prepare_parameters_names = p.Mp_ok_prepare_packet.ok_prepare_parameters_names;
-	      prepare_columns_fields = p.Mp_ok_prepare_packet.ok_prepare_columns_fields;
-	      prepare_columns_names = p.Mp_ok_prepare_packet.ok_prepare_columns_names;
-	    }
-	   )
-	| Mp_result_packet.Result_packet_error e -> (
-	    raise (Error {
-		   client_error_errno = e.Mp_error_packet.error_errno;
-		   client_error_sqlstate = e.Mp_error_packet.error_sqlstate;
-		   client_error_message = e.Mp_error_packet.error_message
-		 })
-	   )
-	| _ -> assert false
-      in
-      Prepared_statement (sql, result)
+      let result = send_packet ~packet:query ~ic:ic ~oc:oc ~sent:Mp_com.Prepare () in
+      match result with
+      | [] -> failwith "No result (prepare)"
+      | (result_set, _)::_ -> (
+	  let result = 
+	    match result_set with
+	    | Mp_result_packet.Result_packet_prepare_ok p -> (
+		{ prepare_handler = p.Mp_ok_prepare_packet.ok_prepare_handler;
+		  prepare_nb_columns = p.Mp_ok_prepare_packet.ok_prepare_nb_columns;
+		  prepare_nb_parameters = p.Mp_ok_prepare_packet.ok_prepare_nb_parameters;
+		  prepare_warning_count = p.Mp_ok_prepare_packet.ok_prepare_warning_count;
+		  prepare_parameters_fields = p.Mp_ok_prepare_packet.ok_prepare_parameters_fields;
+		  prepare_parameters_names = p.Mp_ok_prepare_packet.ok_prepare_parameters_names;
+		  prepare_columns_fields = p.Mp_ok_prepare_packet.ok_prepare_columns_fields;
+		  prepare_columns_names = p.Mp_ok_prepare_packet.ok_prepare_columns_names;
+		}
+	       )
+	    | Mp_result_packet.Result_packet_error e -> (
+		raise (Error {
+		       client_error_errno = e.Mp_error_packet.error_errno;
+		       client_error_sqlstate = e.Mp_error_packet.error_sqlstate;
+		       client_error_message = e.Mp_error_packet.error_message
+		     })
+	       )
+	    | _ -> assert false
+	  in
+	  Prepared_statement (sql, result)
+	 )
+     )
   | Prepared_statement v as p -> p (* no op if already prepared *)
 ;;
 
 let execute ~connection ~statement ?(filter = None) ?(iter = None) ?(return_all_raw_mysql_data = false) 
     ?(params = []) ?(bind = Mp_execute.Bind) ?(flag = Mp_execute.Cursor_type_no_cursor) () = 
-  let (result_set, packet_number) = 
+  let result = 
     match statement with
     | Created_statement sql -> (
 	query ~connection:connection ~sql:sql ~filter:filter ~iter:iter 
@@ -268,33 +291,60 @@ let execute ~connection ~statement ?(filter = None) ?(iter = None) ?(return_all_
 	  ~return_all_raw_mysql_data:return_all_raw_mysql_data ~sent:Mp_com.Execute ()
        )
   in
-  let result = 
-    match result_set with
-    | Mp_result_packet.Result_packet_result_set r -> 
-	Result_set r
-    | Mp_result_packet.Result_packet_ok p ->
-	Result_ok 
-	  { affected_rows = p.Mp_ok_packet.ok_affected_rows;
-	    insert_id = p.Mp_ok_packet.ok_insert_id;
-	    server_status = p.Mp_ok_packet.ok_server_status;
-	    warning_count = p.Mp_ok_packet.ok_warning_count;
-	    message = p.Mp_ok_packet.ok_message;
-	  }
-    | Mp_result_packet.Result_packet_error e ->
-	raise (Error {
-	       client_error_errno = e.Mp_error_packet.error_errno;
-	       client_error_sqlstate = e.Mp_error_packet.error_sqlstate;
-	       client_error_message = e.Mp_error_packet.error_message
-	     })
-    | _ -> assert false
+  let result' = 
+    match result with
+    | [] -> failwith "No result (execute)"
+    | (result_set, _)::[] -> (
+	match result_set with
+	| Mp_result_packet.Result_packet_result_set r -> 
+	    Result_set r
+	| Mp_result_packet.Result_packet_ok p ->
+	    Result_ok 
+	      { affected_rows = p.Mp_ok_packet.ok_affected_rows;
+		insert_id = p.Mp_ok_packet.ok_insert_id;
+		server_status = p.Mp_ok_packet.ok_server_status;
+		warning_count = p.Mp_ok_packet.ok_warning_count;
+		message = p.Mp_ok_packet.ok_message;
+	      }
+	| Mp_result_packet.Result_packet_error e ->
+	    raise (Error {
+		   client_error_errno = e.Mp_error_packet.error_errno;
+		   client_error_sqlstate = e.Mp_error_packet.error_sqlstate;
+		   client_error_message = e.Mp_error_packet.error_message
+		 })
+	| _ -> assert false
+       )
+    | l -> (
+	let f acc (result_set, _) = 
+	  match result_set with
+	  | Mp_result_packet.Result_packet_result_set r -> 
+	      (Result_set r) :: acc
+	  | Mp_result_packet.Result_packet_ok p ->
+	      (Result_ok 
+		 { affected_rows = p.Mp_ok_packet.ok_affected_rows;
+		   insert_id = p.Mp_ok_packet.ok_insert_id;
+		   server_status = p.Mp_ok_packet.ok_server_status;
+		   warning_count = p.Mp_ok_packet.ok_warning_count;
+		   message = p.Mp_ok_packet.ok_message;
+		 }) :: acc
+	  | Mp_result_packet.Result_packet_error e ->
+	      raise (Error {
+		     client_error_errno = e.Mp_error_packet.error_errno;
+		     client_error_sqlstate = e.Mp_error_packet.error_sqlstate;
+		     client_error_message = e.Mp_error_packet.error_message
+		   })
+	  | _ -> assert false
+	in
+	Result_multiple (List.fold_left f [] l)
+       )
   in
   match statement with
-    | Created_statement sql -> 
-	Executed_statement (sql, result)
-    | Prepared_statement (sql, p) ->
-	match flag with
-	| Mp_execute.Cursor_type_no_cursor -> Executed_prepared_statement (sql, p, result)
-	| _ -> Executed_prepared_statement_with_cursor (sql, p)
+  | Created_statement sql -> 
+      Executed_statement (sql, result')
+  | Prepared_statement (sql, p) ->
+      match flag with
+      | Mp_execute.Cursor_type_no_cursor -> Executed_prepared_statement (sql, p, result')
+      | _ -> Executed_prepared_statement_with_cursor (sql, p)
 ;;
 
 let get_result statement =
@@ -314,6 +364,13 @@ let get_result_set statement =
   | _ -> failwith "No result set"
 ;;
 
+let get_result_multiple statement =
+  let result = get_result statement in
+  match result with
+  | Result_multiple r -> r
+  | _ -> failwith "No result multiple"
+;;
+
 let get_result_ok statement =
   let result = get_result statement in
   match result with
@@ -328,7 +385,7 @@ let get_fetch_result_set result =
 ;;
 
 let fetch ~connection ~statement ?(nb_rows = Int64.one) ?(filter = None) ?(iter = None) ?(return_all_raw_mysql_data = false) () = 
-  let (result_set, packet_number) = 
+  let result = 
     match statement with
     | Executed_prepared_statement_with_cursor (sql, prepared) -> (
 	let (ic, oc) = get_ic_oc ~connection:connection in
@@ -339,17 +396,21 @@ let fetch ~connection ~statement ?(nb_rows = Int64.one) ?(filter = None) ?(iter 
        )
     | _ -> failwith "Bad fetch attempt : non prepared statement or statement without cursor"
   in
-  match result_set with
-    Mp_result_packet.Result_packet_result_set r -> Result_set r
-  | Mp_result_packet.Result_packet_eof _ -> raise Fetch_no_more_rows
-  | Mp_result_packet.Result_packet_error e -> (
-      raise (Error {
-	     client_error_errno = e.Mp_error_packet.error_errno;
-	     client_error_sqlstate = e.Mp_error_packet.error_sqlstate;
-	     client_error_message = e.Mp_error_packet.error_message
-	   })
-     )
-  | _ -> assert false  
+  match result with
+  | [] -> failwith "No result (fetch)"
+  | (result_set, _)::_ -> (
+      match result_set with
+	Mp_result_packet.Result_packet_result_set r -> Result_set r
+      | Mp_result_packet.Result_packet_eof _ -> raise Fetch_no_more_rows
+      | Mp_result_packet.Result_packet_error e -> (
+	  raise (Error {
+		 client_error_errno = e.Mp_error_packet.error_errno;
+		 client_error_sqlstate = e.Mp_error_packet.error_sqlstate;
+		 client_error_message = e.Mp_error_packet.error_message
+	       })
+	 )
+      | _ -> assert false
+     )  
 ;;
 
 let close_statement ~connection ~statement = 
@@ -373,10 +434,14 @@ let close_statement ~connection ~statement =
 let ping ~connection = 
   let (ic, oc) = get_ic_oc ~connection:connection in
   let ping = Mp_com.com_ping ic oc in
-  let (result, packet_number) = send_packet ~packet:ping ~ic:ic ~oc:oc ~sent:Mp_com.Ping () in 
+  let result = send_packet ~packet:ping ~ic:ic ~oc:oc ~sent:Mp_com.Ping () in
   match result with
-  | Mp_result_packet.Result_packet_ok _ -> ()
-  | _ -> failwith "Unable to ping"
+  | [] -> failwith "No result (ping)"
+  | (result, _)::_ -> ( 
+      match result with
+      | Mp_result_packet.Result_packet_ok _ -> ()
+      | _ -> failwith "Unable to ping"
+     )
 ;;
 
 let disconnect ~connection = 

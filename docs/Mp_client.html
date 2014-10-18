@@ -298,6 +298,13 @@ Result for a prepare command.<br>
 <td align="left" valign="top" >
 <code><span id="TYPEELTresult.Result_ok"><span class="constructor">Result_ok</span></span> <span class="keyword">of</span> <code class="type"><a href="Mp_client.html#TYPEdml_dcl_result">dml_dcl_result</a></code></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >Result of INSERT, UPDATE, GRANT... statements</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresult.Result_multiple"><span class="constructor">Result_multiple</span></span> <span class="keyword">of</span> <code class="type"><a href="Mp_client.html#TYPEresult">result</a> list</code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >Result of CALL procedure</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr></table>
 
 <div class="info">
@@ -409,6 +416,9 @@ Extract the result part from an executed result.<br>
 </div>
 <pre><span id="VALget_result_set"><span class="keyword">val</span> get_result_set</span> : <code class="type"><a href="Mp_client.html#TYPEexecute_result">execute_result</a> -> Mp_result_set_packet.result_select</code></pre><div class="info">
 Extract the set part from an executed result (for SELECT result).<br>
+</div>
+<pre><span id="VALget_result_multiple"><span class="keyword">val</span> get_result_multiple</span> : <code class="type"><a href="Mp_client.html#TYPEexecute_result">execute_result</a> -> <a href="Mp_client.html#TYPEresult">result</a> list</code></pre><div class="info">
+Extract the multiple part from an executed result (for CALL result).<br>
 </div>
 <pre><span id="VALget_result_ok"><span class="keyword">val</span> get_result_ok</span> : <code class="type"><a href="Mp_client.html#TYPEexecute_result">execute_result</a> -> <a href="Mp_client.html#TYPEdml_dcl_result">dml_dcl_result</a></code></pre><div class="info">
 Extract the ok part from an executed result (for INSERT, UPDATE, GRANT... result).<br>

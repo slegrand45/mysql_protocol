@@ -98,6 +98,7 @@ let result_set_packet packet_length result_set_field_count bits ic oc filter ite
   in
   let list_raw_data_packets = ref [] in
   let data_packets_end = ref false in
+  let server_more_results_exists = ref false in
   let list_native_data = ref [] in
   let () =
     let status_cursor_exists = Mp_eof_packet.status_has_flag eof_packet.Mp_eof_packet.eof_status_flags Mp_eof_packet.Server_status_cursor_exists in
@@ -119,9 +120,16 @@ let result_set_packet packet_length result_set_field_count bits ic oc filter ite
 	let () = 
 	  bitmatch first_byte with
             | { test_packets_end : 1*8 : int, unsigned, bigendian } -> (
-		if (test_packets_end = 0xfe) then
-		  data_packets_end := true
+		if (test_packets_end = 0xfe) then (
+		  data_packets_end := true;
+		  let eof = Mp_eof_packet.eof_packet_bits !bits in
+		  if (Mp_eof_packet.status_has_flag 
+			eof.Mp_eof_packet.eof_status_flags 
+			Mp_eof_packet.Server_more_results_exists) then (
+		    server_more_results_exists := true
+		   )
 	       )
+	     )
 	in
 	if (not !data_packets_end) then
 	  let l = Mp_raw_data.raw_data_packet list_field_packets type_sent !count_rows !bits in
@@ -166,8 +174,9 @@ let result_set_packet packet_length result_set_field_count bits ic oc filter ite
     else
       None
   in
-  { 
-    rows = (list_field_names, list_native_data);
-    mysql_data = mysql_data;
-  }
+  (!server_more_results_exists, 
+   { 
+     rows = (list_field_names, list_native_data);
+     mysql_data = mysql_data;
+   })
 ;;

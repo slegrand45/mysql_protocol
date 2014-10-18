@@ -8,22 +8,13 @@
 \linespread{1.05}
 
 \usepackage{courier}
-\usepackage{listings}
-\lstset {
-	language=[Objective]Caml,
-	breaklines=true,
-	breakatwhitespace=true,
-	showspaces=false,
-	showstringspaces=false
-	showtabs=false,
-	tabsize=2,
-	frame=l,
-	basicstyle=\footnotesize\ttfamily
-}
-
-\usepackage{hyperref}
 
 \usepackage[svgnames]{xcolor}
+
+\usepackage{minted}
+\usemintedstyle{perldoc}
+
+\usepackage{hyperref}
 
 \usepackage{microtype}
 
@@ -39,7 +30,7 @@
 \begin{abstract}
 This tutorial illustrates the use of the MySQL Protocol library, a native OCaml implementation of the MySQL client protocol.
 
-You can download this library from \href[]{https://forge.ocamlcore.org/projects/ocmysqlprotocol/}{the MySQL Protocol home page}.
+You can download this library from \href[]{https://github.com/slegrand45/mysql_protocol}{the MySQL Protocol home page}.
 \end{abstract}
 
 \newpage
@@ -56,51 +47,59 @@ The library has to be installed before using the code below. Please read the INS
 
 First, some convenient alias for the modules used.
 
-\begin{lstlisting}
+%\begin{minted}{ocaml}
+\begin{minted}{ocaml}
 module Mp_client = Mysql_protocol.Mp_client;;
 module Mp_data = Mysql_protocol.Mp_data;;
 module Mp_execute = Mysql_protocol.Mp_execute;;
-module Mp_result_set_packet = Mysql_protocol.Mp_result_set_packet;;
-\end{lstlisting}
+module Mp_result_set_packet = 
+  Mysql_protocol.Mp_result_set_packet;;
+\end{minted}
+%\end{minted}
 
 \section{Helper functions}
 
 We define one function to print the result of SQL statements like INSERT, UPDATE, GRANT...
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let print_result sql r = 
-  print_endline ("Result of the SQL statement \"" ^ sql ^ "\": \n  " ^ (Mp_client.dml_dcl_result_to_string r) ^ "\n")
+  print_endline ("Result of the SQL statement \"" 
+    ^ sql ^ "\": \n  " 
+    ^ (Mp_client.dml_dcl_result_to_string r) ^ "\n")
 ;;
-\end{lstlisting}
+\end{minted}
 
 And two others to print the result of SELECT SQL statements.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let print_row fields row = 
   let print_data f = 
     let (field_name, field_pos) = f in
     let data = List.nth row field_pos in
-    print_endline ("  " ^ field_name ^ ": " ^ (Mp_data.to_string data))
+    print_endline ("  " ^ field_name ^ ": " 
+      ^ (Mp_data.to_string data))
   in
   let () = List.iter print_data fields in
   print_endline "  -- --  "
 ;;
 let print_set sql r = 
   let (fields, rows) = r.Mp_result_set_packet.rows in
-  let () = print_endline ("Result set for the SQL statement \"" ^ sql ^ "\": \n") in
+  let () = print_endline (
+    "Result set for the SQL statement \"" 
+    ^ sql ^ "\": \n") in
   let print_rows =   
     let () = List.iter (print_row fields) rows in
     print_newline ()
   in
   print_rows
 ;;
-\end{lstlisting}
+\end{minted}
 
 \section{Configuration}
 
 To be able to connect to the MySQL server, we have first to configure the client.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let addr = Unix.inet_addr_loopback;;
 let port = 3306;;
 let sockaddr = Unix.ADDR_INET(addr, port);;
@@ -108,20 +107,26 @@ let sockaddr = Unix.ADDR_INET(addr, port);;
 let db_user = "user_ocaml_ocmp";;
 let db_password = "ocmp";;
 let db_name = "test_ocaml_ocmp_utf8";;
-\end{lstlisting}
+\end{minted}
 
 The MySQL server is listening on the loopback interface and it uses the standard MySQL server port. The login to authenticate to the server is "user\_ocaml\_ocmp" with the password "ocmp". And we will use the "test\_ocaml\_ocmp\_utf8" database.
 
 Now, we can create a configuration.
 
-\begin{lstlisting}
-let config = Mp_client.configuration  ~user:db_user ~password:db_password ~sockaddr:sockaddr ~databasename:db_name () in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let config = Mp_client.configuration ~user:db_user
+  ~password:db_password ~sockaddr:sockaddr 
+  ~databasename:db_name () in
+\end{minted}
 
 Here, the default charset and collation is used. The default value for charset is \texttt{Utf8} and the default value for collation is \texttt{Utf8\_general\_ci}. If you want to specify an other value, you can use the \texttt{charset} parameter. For instance:
-\begin{lstlisting}
-   let config = Mp_client.configuration  ~user:db_user ~password:db_password ~sockaddr:sockaddr ~databasename:db_name ~charset:(Mp_charset.Latin1, Mp_charset.Latin1_swedish_ci) () in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let config = Mp_client.configuration ~user:db_user 
+  ~password:db_password ~sockaddr:sockaddr 
+  ~databasename:db_name 
+  ~charset:(Mp_charset.Latin1, Mp_charset.Latin1_swedish_ci)
+  () in
+\end{minted}
 
 To have the complete list of available charset and collation, you can read the documentation of the \texttt{Mp\_Charset} module.
 
@@ -129,23 +134,26 @@ To have the complete list of available charset and collation, you can read the d
 
 Now, we can connect our client to the MySQL server.
 
-\begin{lstlisting}
-let connection = Mp_client.connect ~configuration:config () in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let connection = Mp_client.connect 
+  ~configuration:config () in
+\end{minted}
 
 By default, the connection is not initialized right after the call to the \texttt{connect()} function. It's delayed until necessary (ie until the first real request). You can immediately force the connection by using the \texttt{force} parameter:
 
-\begin{lstlisting}
-let connection = Mp_client.connect ~configuration:config ~force:true () in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let connection = Mp_client.connect 
+  ~configuration:config ~force:true () in
+\end{minted}
 
 \section{Select database}
 
 To specify the current database, use the following function:
 
-\begin{lstlisting}
-let () = Mp_client.use_database ~connection:connection ~databasename:db_name in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let () = Mp_client.use_database 
+  ~connection:connection ~databasename:db_name in
+\end{minted}
 
 \section{Non prepared statement}
 
@@ -157,18 +165,22 @@ A non prepared statement is the simplest way to send a statement to the server. 
 
 The first step is to create the statement from the SQL string.
 
-\begin{lstlisting}
-let sql = "INSERT INTO ocmp_table (col1, col2) VALUES ('col1', 123.45)" in
-let stmt = Mp_client.create_statement_from_string sql in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let sql = 
+  "INSERT INTO ocmp_table (col1, col2) VALUES ('col1', 123.45)"
+in
+let stmt = Mp_client.create_statement_from_string
+  sql in
+\end{minted}
 
 \subsection{Execute}
 
 Next, we send the statement to the server to execute it.
 
-\begin{lstlisting}
-let r = Mp_client.execute ~connection:connection ~statement:stmt () in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let r = Mp_client.execute ~connection:connection 
+  ~statement:stmt () in
+\end{minted}
 
 \subsection{Get result}
 
@@ -178,29 +190,29 @@ After being executed, the statement result can be retrieved.
 
 For statement which returns only a simple result without any record (INSERT, UPDATE, DELETE, GRANT... statement), you can use the \texttt{get\_result\_ok()} function.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let r = Mp_client.get_result_ok r in
-\end{lstlisting}
+\end{minted}
 
 To print this result, use the \texttt{print\_result()} helper function.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let () = print_result sql r in
-\end{lstlisting}
+\end{minted}
 
 \subsubsection{Result with records}
 
 For statement which returns records (typically SELECT statement), you can use the \texttt{get\_result\_set()} function.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let r = Mp_client.get_result_set r in
-\end{lstlisting}
+\end{minted}
 
 To print this result, use the \texttt{print\_set()} helper function.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let () = print_set sql r in 
-\end{lstlisting}
+\end{minted}
 
 \section{Prepared statement}
 
@@ -210,18 +222,19 @@ Especially when the statement includes some parameters, you should use a prepare
 
 The first step is the same as for a non prepared statement, you have to create the statement from the SQL string with the same function.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let sql = "SELECT * FROM ocmp_table WHERE col1=?" in
 let stmt = Mp_client.create_statement_from_string sql in
-\end{lstlisting}
+\end{minted}
 
 \subsection{Prepare}
 
 Then, you prepare the statement.
 
-\begin{lstlisting}
-let prep = Mp_client.prepare ~connection:connection ~statement:stmt in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let prep = Mp_client.prepare ~connection:connection
+  ~statement:stmt in
+\end{minted}
 
 Once a statement has been prepared, you can execute it several times without calling the \texttt{prepare()} function again. 
 
@@ -231,33 +244,40 @@ You execute a prepared statement with the same function as for a non prepared on
 
 \subsubsection{Simple execute}
 
-For the simplest use case (no parameters in the statement, no cursor), you execute the statement as for a non prepared one.
+For the simplest use case (no parameter in the statement, no cursor), you execute the statement as for a non prepared one.
 
-\begin{lstlisting}
-let r = Mp_client.execute ~connection:connection ~statement:prep () in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let r = Mp_client.execute ~connection:connection
+  ~statement:prep () in
+\end{minted}
 
 \subsubsection{With parameters}
 
 If you have some parameters in the statement, you first need to create the list of these parameters in the same order of appearance as in the statement. Please see the documentation for the \texttt{Mp\_data} module to have a complete list of data constructor and learn which one to use for each MySQL column types.
 
-\begin{lstlisting}
-let params = [Mp_data.Varstring "col2"; Mp_data.Decimal (Num.num_of_string "98765/100")] in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let params = [
+  Mp_data.Varstring "col2"; 
+  Mp_data.Decimal (Num.num_of_string "98765/100")
+] in
+\end{minted}
 
 And you add the \texttt{params} function parameter for the execution.
 
-\begin{lstlisting}
-let r = Mp_client.execute ~connection:connection ~statement:prep ~params:params () in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let r = Mp_client.execute ~connection:connection
+  ~statement:prep ~params:params () in
+\end{minted}
 
 \subsubsection{With cursor}
 
 By default, no cursor is used when a prepared statement is executed. So the server will always return all the corresponding records. If you want to be able to fetch the result by parts (record by record for instance), you need to specify the cursor option in the \texttt{execute()} function.
 
-\begin{lstlisting}
-let stmt = Mp_client.execute ~connection:connection ~statement:prep ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let stmt = Mp_client.execute ~connection:connection
+  ~statement:prep ~params:params 
+  ~flag:Mp_execute.Cursor_type_read_only () in
+\end{minted}
 
 \warningbox{ For now, only \texttt{Cursor\_type\_read\_only} type is supported. }
 
@@ -269,93 +289,145 @@ After being executed, the statement result can be retrieved.
 
 For statement which returns only a simple result without any record (INSERT, UPDATE, DELETE, GRANT... statement), there is no difference compared with the non prepared statements. You can also use the \texttt{get\_result\_ok()} function.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let r = Mp_client.get_result_ok r in
-\end{lstlisting}
+\end{minted}
 
 To print this result, use the \texttt{print\_result()} helper function.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let () = print_result sql r in
-\end{lstlisting}
+\end{minted}
 
 \subsubsection{Result with records}
 
 For statement which returns records (typically SELECT statement), if you haven't used a cursor, you cannot use fetch. So you will retrieve all the rows with the same method as a non prepared statement.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let r = Mp_client.get_result_set r in
-\end{lstlisting}
+\end{minted}
 
 To print this result, use the \texttt{print\_set()} helper function.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let () = print_set sql r in 
-\end{lstlisting}
+\end{minted}
 
 If you have used a cursor, you have to use fetch to retrieve the records. By default, the \texttt{fetch()} function get one record at each call. To specify an other number, use the \texttt{nb\_rows} function parameter.
 
-\begin{lstlisting}
-let stmt = Mp_client.execute ~connection:connection ~statement:prep ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
+\begin{minted}{ocaml}
+let stmt = Mp_client.execute ~connection:connection 
+  ~statement:prep ~params:params 
+  ~flag:Mp_execute.Cursor_type_read_only () in
 let () = 
   try
     while true do
-      let rows = Mp_client.fetch ~connection:connection ~statement:stmt () in
-      let rows = Mp_client.get_fetch_result_set rows in
+      let rows = Mp_client.fetch
+        ~connection:connection 
+        ~statement:stmt () in
+      let rows = Mp_client.get_fetch_result_set
+        rows in
       print_set sql rows
     done
   with
-  | Mp_client.Fetch_no_more_rows -> () (* no more rows in the result *)
+  | Mp_client.Fetch_no_more_rows -> ()
 in
-\end{lstlisting}
+\end{minted}
 
 \subsection{Close statement}
 
 When a prepared statement has become useless (ie you don't need to execute it again), you can and should destroy it.
 
-\begin{lstlisting}
-let () = Mp_client.close_statement ~connection:connection ~statement:prep in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let () = Mp_client.close_statement 
+  ~connection:connection ~statement:prep in
+\end{minted}
+
+\section{Procedure call}
+
+First we create the stored procedure after checking if it was already defined.
+
+\begin{minted}{ocaml}
+let sql = "DROP PROCEDURE IF EXISTS ocmp_proc" in
+let stmt = Mp_client.create_statement_from_string 
+  sql in
+let _ = Mp_client.execute ~connection:connection 
+  ~statement:stmt () in 
+let sql = 
+  "CREATE PROCEDURE ocmp_proc() "
+  ^ "BEGIN SELECT * FROM ocmp_table; END"
+in
+let stmt = Mp_client.create_statement_from_string 
+  sql in
+let r = Mp_client.execute ~connection:connection 
+  ~statement:stmt () in 
+let r = Mp_client.get_result_ok r in
+let () = print_result sql r in
+\end{minted}
+
+Next we call the stored procedure. The result type of \texttt{execute()} is \texttt{list result} so we use the helper function \texttt{f()} to extract the value we need.
+
+\warningbox{ To use stored procedures, the capabilities defined for the connection configuration MUST include the capability named \texttt{Client\_multi\_results}. This is the default. }
+
+\begin{minted}{ocaml}
+let sql = "CALL ocmp_proc()" in
+let stmt = Mp_client.create_statement_from_string
+  sql in
+let r = Mp_client.execute ~connection:connection 
+  ~statement:stmt () in
+let r = Mp_client.get_result_multiple r in
+let f e = 
+  match e with
+  | Mp_client.Result_set rs ->
+      print_set sql rs
+  | _ -> ()
+in
+let () = List.iter f r in
+\end{minted}
 
 \section{Ping server}
 
 To avoid a timeout or to test the connection, you can send a ping to the server. No result is returned but an \texttt{Mp\_client.Error} exception can be raised.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let () = Mp_client.ping ~connection:connection in
-\end{lstlisting}
+\end{minted}
 
 \section{Reset the session}
 
 This is useful if you need to destroy the session context (temporary tables, session variables, etc.) in the MySQL server.
 
-\begin{lstlisting}
-let () = Mp_client.reset_session ~connection:connection in
-\end{lstlisting}
+\begin{minted}{ocaml}
+let () = Mp_client.reset_session 
+  ~connection:connection in
+\end{minted}
 
 \section{Catching errors}
 
 Whenever the MySQL server returns an error, an \texttt{Mp\_client.Error} exception is raised.
 
-\begin{lstlisting}
-let stmt = Mp_client.create_statement_from_string ("BAD SQL QUERY") in
+\begin{minted}{ocaml}
+let stmt = Mp_client.create_statement_from_string 
+  ("BAD SQL QUERY") in
 let () =
   try
-    let stmt = Mp_client.execute ~connection:connection ~statement:stmt () in 
+    let stmt = Mp_client.execute
+      ~connection:connection ~statement:stmt () in 
     ()
   with
   | Mp_client.Error error ->
       print_newline ();
-      print_endline ("This is a test to show how to catch a MySQL error, the exception is: " ^ (Mp_client.error_exception_to_string error))
+      print_endline ("Catch MySQL error, exception is: " 
+        ^ (Mp_client.error_exception_to_string error))
 in
-\end{lstlisting}
+\end{minted}
 
 \section{Disconnect}
 
 To close the connection to the server, use the \texttt{disconnect()} function.
 
-\begin{lstlisting}
+\begin{minted}{ocaml}
 let () = Mp_client.disconnect ~connection:connection in
-\end{lstlisting}
+\end{minted}
 
 \end{document}

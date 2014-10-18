@@ -53,6 +53,7 @@
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;result&nbsp;=&nbsp;<span class="keyword">private</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Result_set</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Mp_result_set_packet</span>.result_select<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Result_ok</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Mp_client</span>.dml_dcl_result<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Result_multiple</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Mp_client</span>.result&nbsp;list<br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;executable_statement&nbsp;=&nbsp;<span class="keyword">private</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Created_statement</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Prepared_statement</span>&nbsp;<span class="keyword">of</span>&nbsp;(string&nbsp;*&nbsp;<span class="constructor">Mp_client</span>.prepare_result)<br>
@@ -97,6 +98,7 @@
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.execute_result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_client</span>.result<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result_set&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Mp_client</span>.execute_result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_result_set_packet</span>.result_select<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result_multiple&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.execute_result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_client</span>.result&nbsp;list<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result_ok&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.execute_result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_client</span>.dml_dcl_result<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fetch&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;connection:<span class="constructor">Mp_client</span>.connection&nbsp;<span class="keywordsign">-&gt;</span><br>

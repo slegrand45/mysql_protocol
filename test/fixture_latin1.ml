@@ -237,6 +237,24 @@ let records_bigvarbinary = [
   [Mp_data.Varbinary (Buffer.add_string bigvarbinarybuffer2 (Fixture_config.build_string 65532); bigvarbinarybuffer2);];
 ];;
 
+let records_proc_one_result = [
+  [Mp_data.Longlongint (Big_int.big_int_of_int 100);
+   Mp_data.Varstring ("ABC");
+ ]
+];;
+
+let records_proc_multiple_results = [
+  [Mp_data.Longlongint (Big_int.big_int_of_int 1);
+   Mp_data.Varstring ("A");
+ ];
+  [Mp_data.Longlongint (Big_int.big_int_of_int 2);
+   Mp_data.Varstring ("B");
+ ];
+  [Mp_data.Longlongint (Big_int.big_int_of_int 3);
+   Mp_data.Varstring ("C");
+ ]
+];;
+
 (* right value for the iter test *)
 let ok_value_iter = "2010-12-29" ^ "varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 ";;
 
@@ -396,5 +414,23 @@ INSERT INTO test_ocmp_manyblobs (f_blob1_def_null, f_blob2_def_null, f_blob3_def
   VALUES (LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'));
 INSERT INTO test_ocmp_manyblobs (f_blob1_def_null, f_blob2_def_null, f_blob3_def_null, f_blob4_def_null, f_blob5_def_null, f_blob6_def_null, f_blob7_def_null, f_blob8_def_null, f_blob9_def_null, f_blob10_def_null)
   VALUES (LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'));
+
+DROP PROCEDURE IF EXISTS test_ocmp_proc_one_result;
+delimiter //
+CREATE PROCEDURE test_ocmp_proc_one_result()
+BEGIN
+  SELECT 100 AS oh, 'ABC' AS abc;
+END//
+delimiter ;
+
+DROP PROCEDURE IF EXISTS test_ocmp_proc_multiple_results;
+delimiter //
+CREATE PROCEDURE test_ocmp_proc_multiple_results()
+BEGIN
+  SELECT 1 AS one, 'A' AS a;
+  SELECT 2 AS two, 'B' AS b;
+  SELECT 3 AS three, 'C' AS c;
+END//
+delimiter ;
 
 ";;

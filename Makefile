@@ -1,5 +1,5 @@
 OCAMLBUILD=ocamlbuild
-OCAMLBUILD_OPTIONS=-use-ocamlfind -verbose 9
+OCAMLBUILD_OPTIONS=-use-ocamlfind
 OCAMLFIND=ocamlfind
 TAR=tar
 CP=cp

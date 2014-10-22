@@ -1,17 +1,17 @@
 
 let xor_string s1 s2 = 
   (* s1 and s2 must have the same length *)
-  let s = String.create (String.length s1) in
+  let s = ref "" in
   let i = ref 0 in
   let f c1 = 
     let c2 = String.get s2 !i in
     let c = (Char.code c1) lxor (Char.code c2) in
     let c = Char.chr c in 
-    let () = String.set s !i c in
+    s := !s ^ (String.make 1 c);
     i := !i + 1
   in
   let () = String.iter f s1 in
-  s
+  !s
 ;;
 
 let encode_client_password scramble password = 

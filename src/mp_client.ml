@@ -144,8 +144,14 @@ let connect ~configuration ?(force = false) () =
   let (channel, handshake) = 
     if force then (
       let (ic, oc) = Unix.open_connection configuration.sockaddr in
-      let () = Unix.setsockopt (Unix.descr_of_in_channel ic) Unix.TCP_NODELAY true in
-      let () = Unix.setsockopt (Unix.descr_of_out_channel oc) Unix.TCP_NODELAY true in
+      let () =
+        try
+          Unix.setsockopt (Unix.descr_of_in_channel ic) Unix.TCP_NODELAY true ;
+          Unix.setsockopt (Unix.descr_of_out_channel oc) Unix.TCP_NODELAY true ;
+        with
+        | Unix.Unix_error (Unix.EINVAL, _, _) -> () (* can fail if sockaddr is Unix.ADDR_UNIX *)
+        | e -> raise e
+      in
       let handshake = Mp_handshake.handshake_initialisation ic oc in
       let auth_plugin_name = "" in (* TODO: add in configuration *)
       let client_auth = 

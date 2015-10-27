@@ -49,21 +49,29 @@ let init host sql db_name =
 
 let suite host connection encoding config = 
   let (charset, _) = encoding in
-  "MySQL Protocol tests" >::: 
-  ["test_query_bad" >:: Test_query_bad.test connection;
-   "test_query_ok" >:: Test_query_select.test host connection charset;
-   "test_prepare_ok" >:: Test_query_prepare.test host connection charset;
-   "test_execute_ok" >:: Test_query_execute.test host connection charset;
-   "test_fetch_ok" >:: Test_query_fetch.test connection charset;
-   "test_close_statement" >:: Test_query_close_statement.test host connection;
-   "test_insert_ok" >:: Test_query_insert.test connection charset;
-   "test_update_ok" >:: Test_query_update.test host connection charset;
-   "test_delete_ok" >:: Test_query_delete.test connection;
-   "test_grant_ok" >:: Test_query_grant.test host connection charset;
-   "test_ping" >:: Test_ping.test connection;
-   "test_change_user" >:: Test_change_user.test connection;
-   "test_connect" >:: Test_connect.test host config encoding;
-   "test_client" >:: Test_client.test host encoding;]
+  let (version, _, _, _, _, _) = host in
+  let l = ["test_query_bad" >:: Test_query_bad.test connection;
+    "test_query_ok" >:: Test_query_select.test host connection charset;
+    "test_prepare_ok" >:: Test_query_prepare.test host connection charset;
+    "test_execute_ok" >:: Test_query_execute.test host connection charset;
+    "test_fetch_ok" >:: Test_query_fetch.test connection charset;
+    "test_close_statement" >:: Test_query_close_statement.test host connection;
+    "test_insert_ok" >:: Test_query_insert.test connection charset;
+    "test_update_ok" >:: Test_query_update.test host connection charset;
+    "test_delete_ok" >:: Test_query_delete.test connection;
+    "test_grant_ok" >:: Test_query_grant.test host connection charset;
+    "test_ping" >:: Test_ping.test connection;
+    "test_change_user" >:: Test_change_user.test connection;
+    "test_connect" >:: Test_connect.test host config encoding;
+    "test_client" >:: Test_client.test host encoding;]
+  in
+  let l =
+    if version > 5500 then
+      l @ [("test_transaction" >:: Test_query_transaction.test connection;)]
+    else
+      l
+  in
+  "MySQL Protocol tests" >::: l
 ;;
 
 let run_tests host sql encoding =

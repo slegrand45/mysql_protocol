@@ -18,7 +18,7 @@ tests: all
 	$(OCAMLBUILD) -I src $(OCAMLBUILD_OPTIONS) test.otarget
 
 install: all
-	$(OCAMLFIND) install mysql_protocol META ./_build/src/mysql_protocol.cmi ./_build/src/mysql_protocol.cmo ./_build/src/mysql_protocol.cma ./_build/src/mysql_protocol.cmx ./_build/src/mysql_protocol.cmxa ./_build/src/mysql_protocol.a
+	$(OCAMLFIND) install mysql_protocol META ./_build/src/mysql_protocol.cmi ./_build/src/mysql_protocol.cmo ./_build/src/mysql_protocol.cma ./_build/src/mysql_protocol.cmx ./_build/src/mysql_protocol.cmxs ./_build/src/mysql_protocol.cmxa ./_build/src/mysql_protocol.a
 
 clean:
 	$(OCAMLBUILD) -I src $(OCAMLBUILD_OPTIONS) -clean; \

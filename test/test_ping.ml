@@ -1,5 +1,5 @@
 
-open OUnit;;
+open OUnit
 
 let test1 connection = 
   let () = 
@@ -8,7 +8,6 @@ let test1 connection =
       (Mp_client.ping ~connection:connection)
   in
   ()
-;;
 
 let test connection _ = 
   try
@@ -17,5 +16,4 @@ let test connection _ =
   | Mp_client.Error err as e -> (
       let () = prerr_endline (Mp_client.error_exception_to_string err) in
       raise e
-     )
-;;
+    )

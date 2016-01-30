@@ -5,8 +5,8 @@ let test1 host db_name encoding =
     (* configuration *)
     let sockaddr = Unix.ADDR_INET(addr, port) in
     let config = Mp_client.configuration 
-	~user:db_user ~password:db_password ~sockaddr:sockaddr 
-	~databasename:db_name ~charset:encoding () in
+        ~user:db_user ~password:db_password ~sockaddr:sockaddr 
+        ~databasename:db_name ~charset:encoding () in
     (* connection *)
     let connection = Mp_client.connect ~configuration:config ~force:true () in
     (* use database *)
@@ -40,12 +40,12 @@ let test1 host db_name encoding =
     let () = 
       (* = 5.0.95 : Errno: 1295 / Sql state: HY000 / Message: This command is not supported in the prepared statement protocol yet *)
       if (version > 5095) then (
-	let stmt = Mp_client.create_statement_from_string ("GRANT UPDATE ON " ^ db_name ^ ".test_ocmp_client TO '" ^ db_user ^ "'@'localhost'") in
-	let prep30 = Mp_client.prepare ~connection:connection ~statement:stmt in
-	let _ = Mp_client.execute ~connection:connection ~statement:prep30 () in
-	let () = Mp_client.close_statement ~connection:connection ~statement:prep30 in
-	()
-       )
+        let stmt = Mp_client.create_statement_from_string ("GRANT UPDATE ON " ^ db_name ^ ".test_ocmp_client TO '" ^ db_user ^ "'@'localhost'") in
+        let prep30 = Mp_client.prepare ~connection:connection ~statement:stmt in
+        let _ = Mp_client.execute ~connection:connection ~statement:prep30 () in
+        let () = Mp_client.close_statement ~connection:connection ~statement:prep30 in
+        ()
+      )
     in
     (* show (non prepared) *)
     let stmt = Mp_client.create_statement_from_string ("SHOW COLUMNS FROM test_ocmp_client") in
@@ -58,7 +58,7 @@ let test1 host db_name encoding =
     let stmt = Mp_client.create_statement_from_string ("INSERT INTO test_ocmp_client (name, number) VALUES ('nameX', 148.52)") in
     let _ = Mp_client.execute ~connection:connection ~statement:stmt () in
     (* insert (prepared + params) *)
-    let params = [Mp_data.Varstring "name'2"; Mp_data.Decimal (Num.num_of_string "26895/100")] in
+    let params = [Mp_data.data_varstring "name'2"; Mp_data.data_decimal (Num.num_of_string "26895/100")] in
     let stmt = Mp_client.create_statement_from_string ("INSERT INTO test_ocmp_client (name, number) VALUES (?, ?)") in
     let prep50 = Mp_client.prepare ~connection:connection ~statement:stmt in
     let _ = Mp_client.execute ~connection:connection ~statement:prep50 ~params:params () in
@@ -66,7 +66,7 @@ let test1 host db_name encoding =
     let stmt = Mp_client.create_statement_from_string ("UPDATE test_ocmp_client SET name='name\\'1' WHERE name='nameX'") in
     let _ = Mp_client.execute ~connection:connection ~statement:stmt () in
     (* update (prepared + params) *)
-    let params = [Mp_data.Decimal (Num.num_of_string "1")] in
+    let params = [Mp_data.data_decimal (Num.num_of_string "1")] in
     let stmt = Mp_client.create_statement_from_string ("UPDATE test_ocmp_client SET number=number+?") in
     let prep60 = Mp_client.prepare ~connection:connection ~statement:stmt in
     let _ = Mp_client.execute ~connection:connection ~statement:prep60 ~params:params () in
@@ -74,7 +74,7 @@ let test1 host db_name encoding =
     let stmt = Mp_client.create_statement_from_string ("SELECT * FROM test_ocmp_client ORDER BY id") in
     let _ = Mp_client.execute ~connection:connection ~statement:stmt () in
     (* select (prepared + params) *)
-    let params = [Mp_data.Longlongint Big_int.unit_big_int] in
+    let params = [Mp_data.data_longlongint Big_int.unit_big_int] in
     let stmt = Mp_client.create_statement_from_string ("SELECT * FROM test_ocmp_client WHERE id=?") in
     let prep70 = Mp_client.prepare ~connection:connection ~statement:stmt in
     let stmt = Mp_client.execute ~connection:connection ~statement:prep70 ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
@@ -104,18 +104,31 @@ let test1 host db_name encoding =
     (* try using closed prepared statements *)
     let () = 
       try
-	let _ = Mp_client.execute ~connection:connection ~statement:prep80 () in
-	()
+        let _ = Mp_client.execute ~connection:connection ~statement:prep80 () in
+        ()
       with
       | Mp_client.Error error -> 
-	  if (error.Mp_client.client_error_errno <> 1243) then
-	    assert false
+        if (error.Mp_client.client_error_errno <> 1243) then
+          assert false
     in
+    (* select (non prepared) + conversion to OCaml value *)
+    let stmt = Mp_client.create_statement_from_string ("SELECT name FROM test_ocmp_client WHERE id=1") in
+    let r = Mp_client.execute ~connection:connection ~statement:stmt () in
+    let r = Mp_client.(get_result_set(get_result r)) in
+    let (_, rows) = r.Mp_result_set_packet.rows in
+    let row = List.nth rows 0 in
+    let data = List.nth row 0 in
+    let s =
+        match Mp_data.to_ocaml_string data with
+        | None -> assert false
+        | Some v -> v
+    in
+    let () = if (s <> "name'1") then assert false in
     (* delete (non prepared) *)
     let stmt = Mp_client.create_statement_from_string ("DELETE FROM test_ocmp_client WHERE id=1") in
     let _ = Mp_client.execute ~connection:connection ~statement:stmt () in
     (* delete (prepared) *)
-    let params = [Mp_data.Longlongint (Big_int.big_int_of_int 2)] in
+    let params = [Mp_data.data_longlongint (Big_int.big_int_of_int 2)] in
     let stmt = Mp_client.create_statement_from_string ("DELETE FROM test_ocmp_client WHERE id=?") in
     let prep90 = Mp_client.prepare ~connection:connection ~statement:stmt in
     let _ = Mp_client.execute ~connection:connection ~statement:prep90 ~params:params () in
@@ -130,39 +143,41 @@ let test1 host db_name encoding =
     let stmt = Mp_client.create_statement_from_string ("BAD SQL QUERY") in
     let () = 
       try
-	let _ = Mp_client.execute ~connection:connection ~statement:stmt () in
-	()
+        let _ = Mp_client.execute ~connection:connection ~statement:stmt () in
+        ()
       with
       | Mp_client.Error error -> 
-	  if (error.Mp_client.client_error_errno <> 1064) then
-	    assert false
+        if (error.Mp_client.client_error_errno <> 1064) then
+          assert false
     in
+    (* close prepared statements *)
+    let () = Mp_client.close_statement ~connection:connection ~statement:prep90 in
+    let () = Mp_client.close_statement ~connection:connection ~statement:prep100 in
     (* disconnect *)
     let () = Mp_client.disconnect ~connection:connection in
     ()
   in
   ()
-;;
 
 let test host encoding _ = 
   let module F = (
     val (
       match encoding with
       | (Mp_charset.Latin1, _) -> (
-	  let module E = struct
-	    include Fixture_latin1
-	  end
-	  in (module E : Fixture.FIXTURE)
-	 )
+          let module E = struct
+            include Fixture_latin1
+          end
+          in (module E : Fixture.FIXTURE)
+        )
       | (Mp_charset.Utf8, _) -> (
-	  let module E = struct
-	    include Fixture_utf8
-	  end
-	  in (module E : Fixture.FIXTURE)
-	 )
+          let module E = struct
+            include Fixture_utf8
+          end
+          in (module E : Fixture.FIXTURE)
+        )
       | _ -> assert false
-     ) : Fixture.FIXTURE
-   )
+    ) : Fixture.FIXTURE
+  )
   in
   try
     let () = test1 host F.db_name encoding in
@@ -171,5 +186,4 @@ let test host encoding _ =
   | Mp_client.Error err as e -> (
       let () = prerr_endline (Mp_client.error_exception_to_string err) in
       raise e
-     )
-;;
+    )

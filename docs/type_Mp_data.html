@@ -13,7 +13,7 @@
 <body>
 <code class="code"><span class="keyword">sig</span><br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;sign&nbsp;=&nbsp;<span class="constructor">Positive</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Negative</span><br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;native_data&nbsp;=<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;sql&nbsp;=&nbsp;<span class="keyword">private</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Null</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Tinyint</span>&nbsp;<span class="keyword">of</span>&nbsp;int<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Smallint</span>&nbsp;<span class="keyword">of</span>&nbsp;int<br>
@@ -39,7 +39,49 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Set</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Bit</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Bitstring</span>.t<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Geometry</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Bitstring</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_to_string&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.native_data&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_string&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.native_data&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;eq&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.native_data&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.native_data&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t&nbsp;=&nbsp;<span class="constructor">Mp_data</span>.sql<br>
+&nbsp;&nbsp;<span class="keyword">exception</span>&nbsp;<span class="constructor">Wrong_type</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_null&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_tinyint&nbsp;:&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_smallint&nbsp;:&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_int&nbsp;:&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_longint&nbsp;:&nbsp;<span class="constructor">Int64</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_longlongint&nbsp;:&nbsp;<span class="constructor">Big_int</span>.big_int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_decimal&nbsp;:&nbsp;<span class="constructor">Num</span>.num&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_date&nbsp;:&nbsp;int&nbsp;*&nbsp;int&nbsp;*&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_time&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.sign&nbsp;*&nbsp;int&nbsp;*&nbsp;int&nbsp;*&nbsp;int&nbsp;*&nbsp;<span class="constructor">Int64</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_datetime&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(int&nbsp;*&nbsp;int&nbsp;*&nbsp;int)&nbsp;*&nbsp;(int&nbsp;*&nbsp;int&nbsp;*&nbsp;int&nbsp;*&nbsp;<span class="constructor">Int64</span>.t)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_timestamp&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(int&nbsp;*&nbsp;int&nbsp;*&nbsp;int)&nbsp;*&nbsp;(int&nbsp;*&nbsp;int&nbsp;*&nbsp;int&nbsp;*&nbsp;<span class="constructor">Int64</span>.t)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_float&nbsp;:&nbsp;float&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_double&nbsp;:&nbsp;float&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_int24&nbsp;:&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_year&nbsp;:&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_varchar&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_string&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_varstring&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_blob&nbsp;:&nbsp;<span class="constructor">Buffer</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_binary&nbsp;:&nbsp;<span class="constructor">Buffer</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_varbinary&nbsp;:&nbsp;<span class="constructor">Buffer</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_enum&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_set&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_bit&nbsp;:&nbsp;<span class="constructor">Bitstring</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_geometry&nbsp;:&nbsp;<span class="constructor">Bitstring</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_int&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_int64&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Int64</span>.t&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_big_int&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Big_int</span>.big_int&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_num&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Num</span>.num&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_date&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(int&nbsp;*&nbsp;int&nbsp;*&nbsp;int)&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_time&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Mp_data</span>.sign&nbsp;*&nbsp;int&nbsp;*&nbsp;int&nbsp;*&nbsp;int&nbsp;*&nbsp;<span class="constructor">Int64</span>.t)&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_dt_ts&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;((int&nbsp;*&nbsp;int&nbsp;*&nbsp;int)&nbsp;*&nbsp;(int&nbsp;*&nbsp;int&nbsp;*&nbsp;int&nbsp;*&nbsp;<span class="constructor">Int64</span>.t))&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_float&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;float&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_string&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_buffer&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Buffer</span>.t&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_ocaml_bitstring&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Bitstring</span>.t&nbsp;option<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;eq&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_to_string&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_string&nbsp;:&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
 <span class="keyword">end</span></code></body></html>

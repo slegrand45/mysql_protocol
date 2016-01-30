@@ -19,10 +19,12 @@
 &nbsp;<a class="post" href="Mp_client.html" title="Mp_client">Next</a>
 </div>
 <h1>Module <a href="type_Mp_charset.html">Mp_charset</a></h1>
-<pre><span class="keyword">module</span> Mp_charset: <code class="code">sig</code> <a href="Mp_charset.html">..</a> <code class="code">end</code></pre><div class="info">
+
+<pre><span class="keyword">module</span> Mp_charset: <code class="code">sig</code> <a href="Mp_charset.html">..</a> <code class="code">end</code></pre><div class="info module top">
 Available charset and collation.<br>
 </div>
 <hr width="100%">
+
 <pre><code><span id="TYPEcharset_name"><span class="keyword">type</span> <code class="type"></code>charset_name</span> = </code></pre><table class="typetable">
 <tr>
 <td align="left" valign="top" >
@@ -206,6 +208,7 @@ Available charset and collation.<br>
 <code><span id="TYPEELTcharset_name.Utf8"><span class="constructor">Utf8</span></span></code></td>
 
 </tr></table>
+
 
 
 <pre><code><span id="TYPEcollation_name"><span class="keyword">type</span> <code class="type"></code>collation_name</span> = </code></pre><table class="typetable">
@@ -806,6 +809,12 @@ Available charset and collation.<br>
 </tr></table>
 
 
+
 <pre><span id="TYPEcharset"><span class="keyword">type</span> <code class="type"></code>charset</span> = <code class="type"><a href="Mp_charset.html#TYPEcharset_name">charset_name</a> * <a href="Mp_charset.html#TYPEcollation_name">collation_name</a></code> </pre>
 
-<pre><span id="VALcharset_name_to_string"><span class="keyword">val</span> charset_name_to_string</span> : <code class="type"><a href="Mp_charset.html#TYPEcharset_name">charset_name</a> -> string</code></pre><pre><span id="VALcollation_name_to_string"><span class="keyword">val</span> collation_name_to_string</span> : <code class="type"><a href="Mp_charset.html#TYPEcollation_name">collation_name</a> -> string</code></pre><pre><span id="VALcharset_to_string"><span class="keyword">val</span> charset_to_string</span> : <code class="type"><a href="Mp_charset.html#TYPEcharset_name">charset_name</a> * <a href="Mp_charset.html#TYPEcollation_name">collation_name</a> -> string</code></pre><pre><span id="VALcharset_number"><span class="keyword">val</span> charset_number</span> : <code class="type"><a href="Mp_charset.html#TYPEcharset_name">charset_name</a> * <a href="Mp_charset.html#TYPEcollation_name">collation_name</a> -> int</code></pre><pre><span id="VALnumber_charset"><span class="keyword">val</span> number_charset</span> : <code class="type">int -> <a href="Mp_charset.html#TYPEcharset_name">charset_name</a> * <a href="Mp_charset.html#TYPEcollation_name">collation_name</a></code></pre></body></html>
+
+<pre><span id="VALcharset_name_to_string"><span class="keyword">val</span> charset_name_to_string</span> : <code class="type"><a href="Mp_charset.html#TYPEcharset_name">charset_name</a> -> string</code></pre>
+<pre><span id="VALcollation_name_to_string"><span class="keyword">val</span> collation_name_to_string</span> : <code class="type"><a href="Mp_charset.html#TYPEcollation_name">collation_name</a> -> string</code></pre>
+<pre><span id="VALcharset_to_string"><span class="keyword">val</span> charset_to_string</span> : <code class="type"><a href="Mp_charset.html#TYPEcharset_name">charset_name</a> * <a href="Mp_charset.html#TYPEcollation_name">collation_name</a> -> string</code></pre>
+<pre><span id="VALcharset_number"><span class="keyword">val</span> charset_number</span> : <code class="type"><a href="Mp_charset.html#TYPEcharset_name">charset_name</a> * <a href="Mp_charset.html#TYPEcollation_name">collation_name</a> -> int</code></pre>
+<pre><span id="VALnumber_charset"><span class="keyword">val</span> number_charset</span> : <code class="type">int -> <a href="Mp_charset.html#TYPEcharset_name">charset_name</a> * <a href="Mp_charset.html#TYPEcollation_name">collation_name</a></code></pre></body></html>

@@ -1,18 +1,15 @@
 
 type eof_packet = {
-    eof_field_count : int;
-    eof_warning_count : int;
-    eof_status_flags : int
-  }
-;;
+  eof_field_count : int;
+  eof_warning_count : int;
+  eof_status_flags : int
+}
 
-let eof_packet_empty = 
-  {
-   eof_field_count = 0xfe;
-   eof_warning_count = 0;
-   eof_status_flags = 0
- }
-;;
+let eof_packet_empty = {
+  eof_field_count = 0xfe;
+  eof_warning_count = 0;
+  eof_status_flags = 0
+}
 
 let eof_packet_to_string p = 
   let s = "" in
@@ -20,7 +17,6 @@ let eof_packet_to_string p =
   let s = s ^ (Printf.sprintf "eof_warning_count : %u\n" p.eof_warning_count) in
   let s = s ^ (Printf.sprintf "eof_status_flags : %u\n" p.eof_status_flags) in
   s
-;;
 
 type flag_server = 
     Server_status_in_trans
@@ -35,7 +31,6 @@ type flag_server =
   | Server_status_metadata_changed
   | Server_query_was_slow
   | Server_ps_out_params
-;;
 
 let flag_server_to_int f = 
   match f with
@@ -51,15 +46,10 @@ let flag_server_to_int f =
   | Server_status_metadata_changed -> 0x0400
   | Server_query_was_slow -> 0x0800
   | Server_ps_out_params -> 0x1000
-;;
 
 let status_has_flag status flag = 
   let code = flag_server_to_int flag in
-  if ((status land code) <> 0) then
-    true
-  else
-    false
-;;
+  (status land code) <> 0
 
 let eof_packet_bits bits =
   (* field_count is always 0xfe *)
@@ -70,30 +60,28 @@ let eof_packet_bits bits =
   else if (length = 8) then (
     (* we only have the first byte 0xfe *)
     bitmatch bits with
-      | { 0xfe : 1*8 : int, unsigned, littleendian } ->
-	  { eof_field_count = 0xfe; eof_warning_count = 0; eof_status_flags = 0 }
-    )
+    | { 0xfe : 1*8 : int, unsigned, littleendian } ->
+        { eof_field_count = 0xfe; eof_warning_count = 0; eof_status_flags = 0 }
+  )
   else if (length = 32) then (
     (* complete EOF packet but the first byte 0xfe has already been eat *)
     bitmatch bits with
-      | { warning_count : 2*8 : int, unsigned, littleendian;
-	  status_flags : 2*8 : int, unsigned, littleendian } ->
-	    { eof_field_count = 0xfe; eof_warning_count = warning_count; eof_status_flags = status_flags }
-    )
+    | { warning_count : 2*8 : int, unsigned, littleendian;
+        status_flags : 2*8 : int, unsigned, littleendian } ->
+      { eof_field_count = 0xfe; eof_warning_count = warning_count; eof_status_flags = status_flags }
+  )
   else if (length = 40) then (
     (* complete EOF packet including the first byte 0xfe *)
     bitmatch bits with
-      | { 0xfe : 1*8 : int, unsigned, littleendian;
-	  warning_count : 2*8 : int, unsigned, littleendian;
-	  status_flags : 2*8 : int, unsigned, littleendian } ->
-	    { eof_field_count = 0xfe; eof_warning_count = warning_count; eof_status_flags = status_flags }
-    )
+    | { 0xfe : 1*8 : int, unsigned, littleendian;
+        warning_count : 2*8 : int, unsigned, littleendian;
+        status_flags : 2*8 : int, unsigned, littleendian } ->
+      { eof_field_count = 0xfe; eof_warning_count = warning_count; eof_status_flags = status_flags }
+  )
   else (
     failwith "Bad EOF packet"
-   )
-;;
+  )
 
 let eof_packet_chan ic oc =
   let (_, _, bits) = Mp_packet.extract_packet ic oc in
   eof_packet_bits bits
-;;

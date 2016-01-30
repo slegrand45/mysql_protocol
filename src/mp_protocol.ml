@@ -9,4 +9,3 @@ let protocol_version_to_string v =
     | Protocol_version_41 -> "4.1"
   in
   version
-;;

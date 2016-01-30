@@ -3,11 +3,11 @@
    A client session example.
 *)
 
-module Mp_client = Mysql_protocol.Mp_client;;
-module Mp_data = Mysql_protocol.Mp_data;;
-module Mp_execute = Mysql_protocol.Mp_execute;;
-module Mp_result_set_packet = Mysql_protocol.Mp_result_set_packet;;
-module Mp_capabilities = Mysql_protocol.Mp_capabilities;;
+module Mp_client = Mysql_protocol.Mp_client
+module Mp_data = Mysql_protocol.Mp_data
+module Mp_execute = Mysql_protocol.Mp_execute
+module Mp_result_set_packet = Mysql_protocol.Mp_result_set_packet
+module Mp_capabilities = Mysql_protocol.Mp_capabilities
 
 let run() = 
   (* helper function to display ok result (INSERT, UPDATE... result) *)
@@ -65,6 +65,7 @@ let run() =
   let sql = "DROP TABLE IF EXISTS ocmp_table" in
   let stmt = Mp_client.create_statement_from_string sql in
   let r = Mp_client.execute ~connection:connection ~statement:stmt () in
+  let r = Mp_client.get_result r in
   let r = Mp_client.get_result_ok r in
   let () = print_result sql r in
 
@@ -72,23 +73,26 @@ let run() =
   let sql = "CREATE TABLE IF NOT EXISTS ocmp_table (id BIGINT AUTO_INCREMENT, col1 VARCHAR(255), col2 DECIMAL(30,10), PRIMARY KEY(id))" in
   let stmt = Mp_client.create_statement_from_string sql in
   let r = Mp_client.execute ~connection:connection ~statement:stmt () in
+  let r = Mp_client.get_result r in
   let r = Mp_client.get_result_ok r in
   let () = print_result sql r in
-  
+
   (* send non prepared SQL statement *)
   let sql = "INSERT INTO ocmp_table (col1, col2) VALUES ('col1', 123.45)" in
   let stmt = Mp_client.create_statement_from_string sql in
   let r = Mp_client.execute ~connection:connection ~statement:stmt () in
+  let r = Mp_client.get_result r in
   let r = Mp_client.get_result_ok r in
   let () = print_result sql r in
-  
+
   (* send prepared SQL statement with params *)
-  let params = [Mp_data.Varstring "col2"; Mp_data.Decimal (Num.num_of_string "98765/100")] in
+  let params = [Mp_data.data_varstring "col2"; Mp_data.data_decimal (Num.num_of_string "98765/100")] in
   let sql = "INSERT INTO ocmp_table (col1, col2) VALUES (?, ?)" in
   let stmt = Mp_client.create_statement_from_string sql in
   let prep = Mp_client.prepare ~connection:connection ~statement:stmt in
   let r = Mp_client.execute ~connection:connection ~statement:prep ~params:params () in
   let () = Mp_client.close_statement ~connection:connection ~statement:prep in
+  let r = Mp_client.get_result r in
   let r = Mp_client.get_result_ok r in
   let () = print_result sql r in
 
@@ -96,21 +100,23 @@ let run() =
   let sql = "SELECT * FROM ocmp_table ORDER BY col1" in
   let stmt = Mp_client.create_statement_from_string sql in
   let r = Mp_client.execute ~connection:connection ~statement:stmt () in
+  let r = Mp_client.get_result r in
   let r = Mp_client.get_result_set r in
   let () = print_set sql r in 
 
   (* send prepared SELECT statement with params but no fetch *)
-  let params = [Mp_data.Decimal (Num.num_of_string "98765/100")] in
+  let params = [Mp_data.data_decimal (Num.num_of_string "98765/100")] in
   let sql = "SELECT * FROM ocmp_table WHERE col2=?" in
   let stmt = Mp_client.create_statement_from_string sql in
   let prep = Mp_client.prepare ~connection:connection ~statement:stmt in
   let r = Mp_client.execute ~connection:connection ~statement:prep ~params:params () in
   let () = Mp_client.close_statement ~connection:connection ~statement:prep in
+  let r = Mp_client.get_result r in
   let r = Mp_client.get_result_set r in
   let () = print_set sql r in 
 
   (* send prepared SELECT statement with params and fetch the result *)
-  let params = [Mp_data.Varstring "col1"] in
+  let params = [Mp_data.data_varstring "col1"] in
   let sql = "SELECT * FROM ocmp_table WHERE col1=?" in
   let stmt = Mp_client.create_statement_from_string sql in
   let prep = Mp_client.prepare ~connection:connection ~statement:stmt in
@@ -118,9 +124,9 @@ let run() =
   let () = 
     try
       while true do
-	let rows = Mp_client.fetch ~connection:connection ~statement:stmt () in
-	let rows = Mp_client.get_fetch_result_set rows in
-	print_set sql rows
+        let rows = Mp_client.fetch ~connection:connection ~statement:stmt () in
+        let rows = Mp_client.get_fetch_result_set rows in
+        print_set sql rows
       done
     with
     | Mp_client.Fetch_no_more_rows -> () (* no more rows in the result *)
@@ -132,7 +138,7 @@ let run() =
   let stmt = Mp_client.create_statement_from_string sql in
   let () = print_endline ("Result set for the SQL statement \"" ^ sql ^ "\" (print function embedded): \n") in
   let _ = Mp_client.execute ~connection:connection ~statement:stmt ~iter:(Some print_row) () in
-  
+
   (* PING server *)
   let () = Mp_client.ping ~connection:connection in
 
@@ -147,9 +153,9 @@ let run() =
       ()
     with
     | Mp_client.Error error ->
-	print_newline ();
-	print_endline ("This is a test to show how to catch a MySQL error, the exception is: " ^ (Mp_client.error_exception_to_string error));
-	print_newline ();
+      print_newline ();
+      print_endline ("This is a test to show how to catch a MySQL error, the exception is: " ^ (Mp_client.error_exception_to_string error));
+      print_newline ();
   in
 
   (* create and call a procedure *)
@@ -158,22 +164,26 @@ let run() =
   let _ = Mp_client.execute ~connection:connection ~statement:stmt () in 
   let sql = "CREATE PROCEDURE ocmp_proc() BEGIN SELECT * FROM ocmp_table; END" in
   let stmt = Mp_client.create_statement_from_string sql in
-  let r = Mp_client.execute ~connection:connection ~statement:stmt () in 
+  let r = Mp_client.execute ~connection:connection ~statement:stmt () in
+  let r = Mp_client.get_result r in
   let r = Mp_client.get_result_ok r in
   let () = print_result sql r in
   let sql = "CALL ocmp_proc()" in
   let stmt = Mp_client.create_statement_from_string sql in
   let r = Mp_client.execute ~connection:connection ~statement:stmt () in
   let r = Mp_client.get_result_multiple r in
-  let f e = 
-    match e with
-    | Mp_client.Result_set rs ->
-	print_set sql rs
-    | _ -> ()
+  let f e =
+    try
+      let rs = Mp_client.get_result_set e in
+      print_set sql rs
+    with
+    | Failure _ ->
+        let rs = Mp_client.get_result_ok e in
+        let affected_rows = rs.Mp_client.affected_rows in
+        print_endline (Printf.sprintf "Result OK: affected rows=%Ld" affected_rows)
   in
   let () = List.iter f r in
 
   (* disconnect *)
   let () = Mp_client.disconnect ~connection:connection in
   ()
-;;

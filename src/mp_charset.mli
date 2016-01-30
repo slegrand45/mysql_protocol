@@ -29,7 +29,6 @@ type charset_name =
   | Macroman
   | Swe7
   | Utf8
-;;
 
 type collation_name =
     Armscii8_bin
@@ -117,7 +116,6 @@ type collation_name =
   | Utf8_swedish_ci
   | Utf8_turkish_ci
   | Utf8_unicode_ci
-;;
 
 type charset = (charset_name * collation_name);;
 

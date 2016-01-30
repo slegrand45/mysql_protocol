@@ -26,7 +26,6 @@ type charset_name =
   | Macroman
   | Swe7
   | Utf8
-;;
 
 type collation_name =
     Armscii8_bin
@@ -114,7 +113,6 @@ type collation_name =
   | Utf8_swedish_ci
   | Utf8_turkish_ci
   | Utf8_unicode_ci
-;;
 
 let charset_name_to_string cn = 
   match cn with
@@ -144,9 +142,8 @@ let charset_name_to_string cn =
   | Macroman -> "Macroman"
   | Swe7 -> "Swe7"
   | Utf8 -> "Utf8"
-;;
 
-type charset = (charset_name * collation_name);;
+type charset = (charset_name * collation_name)
 
 let collation_name_to_string c =
   match c with
@@ -235,11 +232,9 @@ let collation_name_to_string c =
   | Utf8_swedish_ci -> "Utf8_swedish_ci"
   | Utf8_turkish_ci -> "Utf8_turkish_ci"
   | Utf8_unicode_ci -> "Utf8_unicode_ci"
-;;
 
 let charset_to_string (charset, collation) =
   "(" ^ (charset_name_to_string charset) ^ ", " ^ (collation_name_to_string collation) ^ ")"
-;;
 
 let charset_number (charset, collation) =
   match (charset, collation) with
@@ -329,7 +324,6 @@ let charset_number (charset, collation) =
   | (Utf8, Utf8_esperanto_ci) -> 209
   | (Utf8, Utf8_hungarian_ci) -> 210
   | (_, _) -> failwith "Unknown (charset, collation) tuple"
-;;
 
 let number_charset n =
   match n with
@@ -419,6 +413,3 @@ let number_charset n =
   | 209 -> (Utf8, Utf8_esperanto_ci)
   | 210 -> (Utf8, Utf8_hungarian_ci)
   | _  -> failwith "Unknown (charset, collation) number"
-;;
-
-

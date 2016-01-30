@@ -11,9 +11,9 @@ let print_set sql r =
 let build_set r = 
   let col = Mysql.column r in
   let row x = ( Mysql.not_null Mysql.int642ml (col ~key:"id" ~row:x), 
-		Mysql.not_null Mysql.str2ml (col ~key:"col1" ~row:x),
+                Mysql.not_null Mysql.str2ml (col ~key:"col1" ~row:x),
                 Mysql.not_null Mysql.decimal2ml (col ~key:"col2" ~row:x)
-	       ) in
+              ) in
   let rec loop = function
     | None -> []
     | Some x -> row x :: loop (Mysql.fetch r)
@@ -25,7 +25,7 @@ let build_set_from_prepare r =
     ( Mysql.not_null Mysql.int642ml x.(0), 
       Mysql.not_null Mysql.str2ml x.(1),
       Mysql.not_null Mysql.decimal2ml x.(2)
-     ) 
+    )
   in
   let rec loop = function
     | None -> []
@@ -45,11 +45,11 @@ let run() =
   } in
 
   let db = Mysql.connect ~options:[] conf in
-    
+
   let _ = Mysql.exec db "DROP TABLE IF EXISTS ocmp_table" in
 
   let _ = Mysql.exec db "CREATE TABLE IF NOT EXISTS ocmp_table (id BIGINT AUTO_INCREMENT, col1 VARCHAR(255), col2 DECIMAL(30,10), PRIMARY KEY(id))" in
-  
+
   let _ = Mysql.exec db "INSERT INTO ocmp_table (col1, col2) VALUES ('col1', 123.45)" in
 
   let stmt = Mysql.Prepared.create db "INSERT INTO ocmp_table (col1, col2) VALUES (?, ?)" in
@@ -76,4 +76,3 @@ let run() =
   let () = Mysql.disconnect db in
 
   ()
-;;

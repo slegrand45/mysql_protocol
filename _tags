@@ -1,3 +1,4 @@
+true: principal, safe_string, warn_A, warn(-E)
 <src/*.ml> or <src/*.mli> or "src/mysql_protocol.cm*" : syntax(camlp4o),package(num),package(unix),package(cryptokit),package(bitstring),package(bitstring.syntax),syntax(bitstring.syntax)
 <src/mp_*.cm*>: for-pack(Mysql_protocol)
 <test/*.ml> or <test/*.mli> or "test/test.byte" or "test/test.native" : syntax(camlp4o),warn_A,warn_e,package(num),package(cryptokit),package(oUnit),package(bitstring),package(bitstring.syntax),syntax(bitstring.syntax)

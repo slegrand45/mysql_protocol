@@ -1,35 +1,35 @@
-open OUnit;;
+open OUnit
 
-let fields = Test_query_select.fields;;
-let records_equals = Test_query_select.records_equals;;
+let fields = Test_query_select.fields
+let records_equals = Test_query_select.records_equals
 
 let test1 connection records = 
   let () = 
     let sql = "SELECT f_string_null_no_def FROM test_ocmp WHERE f_autoinc_not_null_no_def > ?" in
     let stmt = Mp_client.create_statement_from_string sql in
     let p = Mp_client.prepare ~connection:connection ~statement:stmt in
-    let params = [Mp_data.Longlongint (Big_int.big_int_of_int 0)] in
+    let params = [Mp_data.data_longlongint (Big_int.big_int_of_int 0)] in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( ([("f_string_null_no_def", 0)], [[List.nth (List.nth records 0) 11]]) )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( ([("f_string_null_no_def", 0)], [[List.nth (List.nth records 0) 11]]) )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( [("f_string_null_no_def", 0)], [[List.nth (List.nth records 1) 11]] )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( [("f_string_null_no_def", 0)], [[List.nth (List.nth records 1) 11]] )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -37,34 +37,34 @@ let test1 connection records =
     let sql = "SELECT f_string_null_no_def, f_int_default_null FROM test_ocmp WHERE f_autoinc_not_null_no_def > ?" in
     let stmt = Mp_client.create_statement_from_string sql in
     let p = Mp_client.prepare ~connection:connection ~statement:stmt in
-    let params = [Mp_data.Longlongint (Big_int.big_int_of_int 0)] in
+    let params = [Mp_data.data_longlongint (Big_int.big_int_of_int 0)] in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( [("f_string_null_no_def", 0); ("f_int_default_null", 1)], 
-	  [
-	   [List.nth (List.nth records 0) 11; List.nth (List.nth records 0) 21];
-	 ] )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( [("f_string_null_no_def", 0); ("f_int_default_null", 1)], 
+          [
+            [List.nth (List.nth records 0) 11; List.nth (List.nth records 0) 21];
+          ] )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( [("f_string_null_no_def", 0); ("f_int_default_null", 1)], 
-	  [
-	   [List.nth (List.nth records 1) 11; List.nth (List.nth records 1) 21];
-	 ] )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( [("f_string_null_no_def", 0); ("f_int_default_null", 1)], 
+          [
+            [List.nth (List.nth records 1) 11; List.nth (List.nth records 1) 21];
+          ] )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -72,28 +72,28 @@ let test1 connection records =
     let sql = "SELECT f_int_default_null FROM test_ocmp WHERE f_autoinc_not_null_no_def > ?" in
     let stmt = Mp_client.create_statement_from_string sql in
     let p = Mp_client.prepare ~connection:connection ~statement:stmt in
-    let params = [Mp_data.Longlongint (Big_int.big_int_of_int 0)] in
+    let params = [Mp_data.data_longlongint (Big_int.big_int_of_int 0)] in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( [("f_int_default_null", 0)], [[List.nth (List.nth records 0) 21]] )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( [("f_int_default_null", 0)], [[List.nth (List.nth records 0) 21]] )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( [("f_int_default_null", 0)], [[List.nth (List.nth records 1) 21]] )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( [("f_int_default_null", 0)], [[List.nth (List.nth records 1) 21]] )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -101,28 +101,28 @@ let test1 connection records =
     let sql = "SELECT * FROM test_ocmp WHERE f_autoinc_not_null_no_def > ?" in
     let stmt = Mp_client.create_statement_from_string sql in
     let p = Mp_client.prepare ~connection:connection ~statement:stmt in
-    let params = [Mp_data.Longlongint (Big_int.big_int_of_int 0)] in
+    let params = [Mp_data.data_longlongint (Big_int.big_int_of_int 0)] in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( (fields, [List.nth records 0]) ) 
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( (fields, [List.nth records 0]) ) 
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( (fields, [List.nth records 1]) ) 
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( (fields, [List.nth records 1]) ) 
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -130,20 +130,20 @@ let test1 connection records =
     let sql = "SELECT f_string_null_no_def FROM test_ocmp WHERE f_autoinc_not_null_no_def > ?" in
     let stmt = Mp_client.create_statement_from_string sql in
     let p = Mp_client.prepare ~connection:connection ~statement:stmt in
-    let params = [Mp_data.Longlongint (Big_int.big_int_of_int 0)] in
+    let params = [Mp_data.data_longlongint (Big_int.big_int_of_int 0)] in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( ([("f_string_null_no_def", 0)], [[List.nth (List.nth records 0) 11]; [List.nth (List.nth records 1) 11]]) )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( ([("f_string_null_no_def", 0)], [[List.nth (List.nth records 0) 11]; [List.nth (List.nth records 1) 11]]) )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -151,22 +151,22 @@ let test1 connection records =
     let sql = "SELECT f_string_null_no_def, f_int_default_null FROM test_ocmp WHERE f_autoinc_not_null_no_def > ?" in
     let stmt = Mp_client.create_statement_from_string sql in
     let p = Mp_client.prepare ~connection:connection ~statement:stmt in
-    let params = [Mp_data.Longlongint (Big_int.big_int_of_int 0)] in
+    let params = [Mp_data.data_longlongint (Big_int.big_int_of_int 0)] in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( [("f_string_null_no_def", 0); ("f_int_default_null", 1)], 
+        ~cmp:records_equals
+        ( [("f_string_null_no_def", 0); ("f_int_default_null", 1)], 
           [[List.nth (List.nth records 0) 11; List.nth (List.nth records 0) 21]; 
            [List.nth (List.nth records 1) 11; List.nth (List.nth records 1) 21]] )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -174,20 +174,20 @@ let test1 connection records =
     let sql = "SELECT f_int_default_null FROM test_ocmp WHERE f_autoinc_not_null_no_def > ?" in
     let stmt = Mp_client.create_statement_from_string sql in
     let p = Mp_client.prepare ~connection:connection ~statement:stmt in
-    let params = [Mp_data.Longlongint (Big_int.big_int_of_int 0)] in
+    let params = [Mp_data.data_longlongint (Big_int.big_int_of_int 0)] in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( [("f_int_default_null", 0)], [[List.nth (List.nth records 0) 21]; [List.nth (List.nth records 1) 21]] )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( [("f_int_default_null", 0)], [[List.nth (List.nth records 0) 21]; [List.nth (List.nth records 1) 21]] )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -195,20 +195,20 @@ let test1 connection records =
     let sql = "SELECT * FROM test_ocmp WHERE f_autoinc_not_null_no_def > ?" in
     let stmt = Mp_client.create_statement_from_string sql in
     let p = Mp_client.prepare ~connection:connection ~statement:stmt in
-    let params = [Mp_data.Longlongint (Big_int.big_int_of_int 0)] in
+    let params = [Mp_data.data_longlongint (Big_int.big_int_of_int 0)] in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( (fields, [List.nth records 0; List.nth records 1]) ) 
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( (fields, [List.nth records 0; List.nth records 1]) ) 
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -238,27 +238,26 @@ let test1 connection records =
        (* List.nth (List.nth records i) 52; (* f_float_def_0  *) query returns empty result with MySQL 5.1.x *)
        (* List.nth (List.nth records i) 53; (* f_double_def_0 *) query returns empty result with MySQL 5.1.x *)
        List.nth (List.nth records i) 54; List.nth (List.nth records i) 55; 
-     ] 
+      ] 
     in
     let params = get_params 0 in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( (fields, [List.nth records 0]) ) 
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( (fields, [List.nth records 0]) ) 
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
   ()
-;;
 
 let test_bigstring connection records_bigstring records_bigvarchar records_bigvarbinary = 
   let () = 
@@ -268,17 +267,17 @@ let test_bigstring connection records_bigstring records_bigvarchar records_bigva
     let p = Mp_client.execute ~connection:connection ~statement:p ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( ([("f_bigstring_char255_def_null", 0); 
-	    ("f_bigstring_binary255_def_null", 1);], records_bigstring) )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( ([("f_bigstring_char255_def_null", 0); 
+            ("f_bigstring_binary255_def_null", 1);], records_bigstring) )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -289,16 +288,16 @@ let test_bigstring connection records_bigstring records_bigvarchar records_bigva
     let p = Mp_client.execute ~connection:connection ~statement:p ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( ([("f_bigstring_varchar65532_def_empty", 0)], records_bigvarchar) ) 
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( ([("f_bigstring_varchar65532_def_empty", 0)], records_bigvarchar) ) 
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
@@ -309,21 +308,20 @@ let test_bigstring connection records_bigstring records_bigvarchar records_bigva
     let p = Mp_client.execute ~connection:connection ~statement:p ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( ([("f_bigstring_varbinary65532_def_null", 0)], records_bigvarbinary) )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( ([("f_bigstring_varbinary65532_def_null", 0)], records_bigvarbinary) )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
   ()
-;;
 
 let test_manyblobs connection records_manyblobs db_name = 
   let configuration = connection.Mp_client.configuration in
@@ -336,34 +334,33 @@ let test_manyblobs connection records_manyblobs db_name =
       let p = Mp_client.prepare ~connection:connection ~statement:stmt in
       let p = Mp_client.execute ~connection:connection ~statement:p ~flag:Mp_execute.Cursor_type_read_only () in
       let () = 
-	assert_equal ~msg:sql 
-	  ~cmp:records_equals
-	  ( ([("f_blob1_def_null", 0);
-	      ("f_blob2_def_null", 1);
-	      ("f_blob3_def_null", 2);
-	      ("f_blob4_def_null", 3);
-	      ("f_blob5_def_null", 4);
-	      ("f_blob6_def_null", 5);
-	      ("f_blob7_def_null", 6);
-	      ("f_blob8_def_null", 7);
-	      ("f_blob9_def_null", 8);
-	      ("f_blob10_def_null", 9);
-	    ], records_manyblobs) ) 
-	  (Test_query.try_query 
-	     ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
-	     ~sql:sql)
+        assert_equal ~msg:sql 
+          ~cmp:records_equals
+          ( ([("f_blob1_def_null", 0);
+              ("f_blob2_def_null", 1);
+              ("f_blob3_def_null", 2);
+              ("f_blob4_def_null", 3);
+              ("f_blob5_def_null", 4);
+              ("f_blob6_def_null", 5);
+              ("f_blob7_def_null", 6);
+              ("f_blob8_def_null", 7);
+              ("f_blob9_def_null", 8);
+              ("f_blob10_def_null", 9);
+             ], records_manyblobs) ) 
+          (Test_query.try_query 
+             ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
+             ~sql:sql)
       in
       let () = 
-	assert_raises ~msg:sql 
-	  Mp_client.Fetch_no_more_rows 
-	  ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        assert_raises ~msg:sql 
+          Mp_client.Fetch_no_more_rows 
+          ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
       in
       ()
     else
       ()
   in
   ()  
-;;
 
 let test_filter_iter connection records ok_value_iter = 
   let () = 
@@ -374,9 +371,9 @@ let test_filter_iter connection records ok_value_iter =
       let d = List.nth row (List.assoc "f_date_null_no_def" fields) in
       match d with
       | Mp_data.Date v -> (
-	  let (year, _, _) = v in
-	  if (year >= 2000) then true else false
-	 )
+          let (year, _, _) = v in
+          if (year >= 2000) then true else false
+        )
       | _ -> assert false
     in
     let acc = ref "" in
@@ -388,46 +385,45 @@ let test_filter_iter connection records ok_value_iter =
     let p = Mp_client.execute ~connection:connection ~statement:p ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 
       assert_equal ~msg:sql 
-	~cmp:records_equals
-	( (fields, [List.nth records 0]) )
-	(Test_query.try_query 
-	   ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p 
-		   ~filter:(Some filter) ~iter:(Some (iter acc)) ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
-	   ~sql:sql)
+        ~cmp:records_equals
+        ( (fields, [List.nth records 0]) )
+        (Test_query.try_query 
+           ~f:( (Mp_client.get_fetch_result_set(Mp_client.fetch ~connection:connection ~statement:p 
+                                                  ~filter:(Some filter) ~iter:(Some (iter acc)) ~nb_rows:(Int64.of_int 2) ())).Mp_result_set_packet.rows ) 
+           ~sql:sql)
     in
     let () = 
       assert_equal ~msg:sql 
-	ok_value_iter !acc
+        ok_value_iter !acc
     in
     let () = 
       assert_raises ~msg:sql 
-	Mp_client.Fetch_no_more_rows 
-	((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
+        Mp_client.Fetch_no_more_rows 
+        ((fun _ -> Mp_client.fetch ~connection:connection ~statement:p ()))
     in
     ()
   in
   ()
-;;
 
 let test connection encoding _ = 
   let module F = (
     val (
       match encoding with
       | Mp_charset.Latin1 -> (
-	  let module E = struct
-	    include Fixture_latin1
-	  end
-	  in (module E : Fixture.FIXTURE)
-	 )
+          let module E = struct
+            include Fixture_latin1
+          end
+          in (module E : Fixture.FIXTURE)
+        )
       | Mp_charset.Utf8 -> (
-	  let module E = struct
-	    include Fixture_utf8
-	  end
-	  in (module E : Fixture.FIXTURE)
-	 )
+          let module E = struct
+            include Fixture_utf8
+          end
+          in (module E : Fixture.FIXTURE)
+        )
       | _ -> assert false
-     ) : Fixture.FIXTURE
-   )
+    ) : Fixture.FIXTURE
+  )
   in
   try
     let () = test1 connection F.records in
@@ -439,5 +435,4 @@ let test connection encoding _ =
   | Mp_client.Error err as e -> (
       let () = prerr_endline (Mp_client.error_exception_to_string err) in
       raise e
-     )
-;;
+    )

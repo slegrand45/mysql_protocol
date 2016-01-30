@@ -1,5 +1,5 @@
 
-open OUnit;;
+open OUnit
 
 let test connection _ =
   let () = 
@@ -7,10 +7,10 @@ let test connection _ =
     let stmt = Mp_client.create_statement_from_string sql in
     assert_raises ~msg:sql 
       (Mp_client.Error {
-       Mp_client.client_error_errno = 1064; 
-       Mp_client.client_error_sqlstate = "42000"; 
-       Mp_client.client_error_message = "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '" ^ sql ^ "' at line 1"
-     } ) 
+          Mp_client.client_error_errno = 1064; 
+          Mp_client.client_error_sqlstate = "42000"; 
+          Mp_client.client_error_message = "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '" ^ sql ^ "' at line 1"
+        } ) 
       (fun _ -> (Test_query.try_query ~f:(Mp_client.execute ~connection:connection ~statement:stmt ()) ~sql:sql))
   in
   let () = 
@@ -18,10 +18,10 @@ let test connection _ =
     let stmt = Mp_client.create_statement_from_string sql in
     assert_raises ~msg:sql 
       (Mp_client.Error {
-       Mp_client.client_error_errno = 1064; 
-       Mp_client.client_error_sqlstate = "42000"; 
-       Mp_client.client_error_message = "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' at line 1"
-     } ) 
+          Mp_client.client_error_errno = 1064; 
+          Mp_client.client_error_sqlstate = "42000"; 
+          Mp_client.client_error_message = "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' at line 1"
+        } ) 
       (fun _ -> (Test_query.try_query ~f:(Mp_client.execute ~connection:connection ~statement:stmt ()) ~sql:sql))
   in
   let () = 
@@ -29,11 +29,10 @@ let test connection _ =
     let stmt = Mp_client.create_statement_from_string sql in
     assert_raises ~msg:sql 
       (Mp_client.Error {
-       Mp_client.client_error_errno = 1060; 
-       Mp_client.client_error_sqlstate = "42S21"; 
-       Mp_client.client_error_message = "Duplicate column name 'f_varstring_null_no_def'"
-     } ) 
+          Mp_client.client_error_errno = 1060; 
+          Mp_client.client_error_sqlstate = "42S21"; 
+          Mp_client.client_error_message = "Duplicate column name 'f_varstring_null_no_def'"
+        } ) 
       (fun _ -> (Test_query.try_query ~f:(Mp_client.execute ~connection:connection ~statement:stmt ()) ~sql:sql))
   in
   ()
-;;

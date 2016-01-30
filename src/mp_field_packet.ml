@@ -27,7 +27,6 @@ type field_packet_field_type =
   | Field_type_var_string
   | Field_type_string
   | Field_type_geometry
-;;
 
 let field_packet_field_type_to_string p = 
   let s = 
@@ -61,7 +60,6 @@ let field_packet_field_type_to_string p =
     | Field_type_geometry -> "GEOMETRY"
   in
   s
-;;
 
 type field_packet_field_flag = 
     Field_flag_not_null
@@ -76,7 +74,6 @@ type field_packet_field_flag =
   | Field_flag_auto_increment
   | Field_flag_timestamp
   | Field_flag_set
-;;
 
 let field_packet_field_flag_to_string p = 
   let s = 
@@ -95,24 +92,22 @@ let field_packet_field_flag_to_string p =
     | Field_flag_set -> "SET"
   in
   s
-;;
 
 type field_packet = {
-    field_catalog : string;
-    field_db : string;
-    field_table : string;
-    field_org_table : string;
-    field_name : string;
-    field_org_name : string;
-    field_charset_number : int;
-    field_length : Int64.t;
-    field_type : field_packet_field_type;
-    field_flags : field_packet_field_flag list;
-    field_decimals : int;
-    field_default : Int64.t;
-    version : Mp_protocol.protocol_version
-  }
-;;
+  field_catalog : string;
+  field_db : string;
+  field_table : string;
+  field_org_table : string;
+  field_name : string;
+  field_org_name : string;
+  field_charset_number : int;
+  field_length : Int64.t;
+  field_type : field_packet_field_type;
+  field_flags : field_packet_field_flag list;
+  field_decimals : int;
+  field_default : Int64.t;
+  version : Mp_protocol.protocol_version
+}
 
 let field_packet_to_string p =
   let version = Mp_protocol.protocol_version_to_string p.version in
@@ -139,7 +134,6 @@ let field_packet_to_string p =
   let s = s ^ (Printf.sprintf "field_default : %Lu\n" p.field_default) in
   let s = s ^ (Printf.sprintf "version : %s\n" version) in
   s
-;;
 
 let decode_field_packet_field_type field_type = 
   match field_type with
@@ -171,7 +165,6 @@ let decode_field_packet_field_type field_type =
   | 0xfe -> Field_type_string
   | 0xff -> Field_type_geometry
   | _ -> failwith (Printf.sprintf "Unknown field type = %u in field packet" field_type)
-;;
 
 let decode_field_packet_field_flag bits = 
   (* /!\ : bits is 1 or 2 bytes *)
@@ -180,37 +173,38 @@ let decode_field_packet_field_flag bits =
        set, timestamp, auto_increment, enum) = 
     if length = 2*8 then
       bitmatch bits with
-        | { binary : 1;
-	    zerofill : 1;
-	    unsigned : 1;
-	    blob : 1;
-	    multiple_key : 1;
-	    unique_key : 1;
-	    pri_key : 1;
-	    not_null : 1;
-	    _ : 1;
-	    _ : 1;
-	    _ : 1;
-	    _ : 1;
-	    set : 1;
-	    timestamp : 1;
-	    auto_increment : 1;
-	    enum : 1
-	     } ->
-	      (binary, zerofill, unsigned, blob, multiple_key, unique_key, pri_key, not_null,
-	       set, timestamp, auto_increment, enum)
+      | { binary : 1;
+          zerofill : 1;
+          unsigned : 1;
+          blob : 1;
+          multiple_key : 1;
+          unique_key : 1;
+          pri_key : 1;
+          not_null : 1;
+          _ : 1;
+          _ : 1;
+          _ : 1;
+          _ : 1;
+          set : 1;
+          timestamp : 1;
+          auto_increment : 1;
+          enum : 1
+        } ->
+          (binary, zerofill, unsigned, blob, multiple_key, unique_key, pri_key, not_null,
+            set, timestamp, auto_increment, enum)
     else if length = 1*8 then
       bitmatch bits with
-        | { binary : 1;
-	    zerofill : 1;
-	    unsigned : 1;
-	    blob : 1;
-	    multiple_key : 1;
-	    unique_key : 1;
-	    pri_key : 1;
-	    not_null : 1 } ->
-	      (binary, zerofill, unsigned, blob, multiple_key, unique_key, pri_key, not_null,
-	       false, false, false, false)
+      | { binary : 1;
+          zerofill : 1;
+          unsigned : 1;
+          blob : 1;
+          multiple_key : 1;
+          unique_key : 1;
+          pri_key : 1;
+          not_null : 1
+        } ->
+          (binary, zerofill, unsigned, blob, multiple_key, unique_key, pri_key, not_null,
+            false, false, false, false)
     else 
       failwith (Printf.sprintf "Bad length = %u for field flags in field packet" length)
   in
@@ -228,7 +222,6 @@ let decode_field_packet_field_flag bits =
   let l = if auto_increment then Field_flag_auto_increment::l else l in
   let l = if enum then Field_flag_enum::l else l in
   l
-;;
 
 let field_packet acc ic oc =
   let (_, _, bits) = Mp_packet.extract_packet ic oc in
@@ -241,86 +234,83 @@ let field_packet acc ic oc =
       let (name, rest) = Mp_string.length_coded_string rest in
       let (org_name, rest) = Mp_string.length_coded_string rest in
       bitmatch rest with 
-        | { _ : 1*8 : int, unsigned, bigendian; (* filler *)
-            charset_number : 2*8 : int, unsigned, littleendian;
-	    length : Mp_bitstring.compute32 : int, unsigned, littleendian;
-	    field_type : 1*8 : int, unsigned, bigendian;
-	    flags : 2*8 : bitstring;
-	    decimals : 1*8 : int, unsigned, bigendian;
-	    0x00 : 1*8 : int, unsigned, bigendian;
-	    0x00 : 1*8 : int, unsigned, bigendian;
-	    rest : -1 : bitstring } -> (
-	       let (default, _) = 
-		 if (Bitstring.bitstring_length rest > 0) then 
-		   Mp_binary.length_coded_binary rest
-		 else
-		   (Int64.zero, rest)
-	       in
-	       {
-		field_catalog = catalog;
-		field_db = db;
-		field_table = table;
-		field_org_table = org_table;
-		field_name = name;
-		field_org_name = org_name;
-		field_charset_number = charset_number;
-		field_length = length;
-		field_type = decode_field_packet_field_type field_type;
-		field_flags = decode_field_packet_field_flag flags;
-		field_decimals = decimals;
-		field_default = default;
-		version = Mp_protocol.Protocol_version_41
-	      }
-	     )
+      | { _ : 1*8 : int, unsigned, bigendian; (* filler *)
+          charset_number : 2*8 : int, unsigned, littleendian;
+          length : Mp_bitstring.compute32 : int, unsigned, littleendian;
+          field_type : 1*8 : int, unsigned, bigendian;
+          flags : 2*8 : bitstring;
+          decimals : 1*8 : int, unsigned, bigendian;
+          0x00 : 1*8 : int, unsigned, bigendian;
+          0x00 : 1*8 : int, unsigned, bigendian;
+          rest : -1 : bitstring } -> (
+            let (default, _) = 
+              if (Bitstring.bitstring_length rest > 0) then 
+                Mp_binary.length_coded_binary rest
+              else
+                (Int64.zero, rest)
+            in
+            {
+              field_catalog = catalog;
+              field_db = db;
+              field_table = table;
+              field_org_table = org_table;
+              field_name = name;
+              field_org_name = org_name;
+              field_charset_number = charset_number;
+              field_length = length;
+              field_type = decode_field_packet_field_type field_type;
+              field_flags = decode_field_packet_field_flag flags;
+              field_decimals = decimals;
+              field_default = default;
+              version = Mp_protocol.Protocol_version_41
+            }
+          )
     else
-      (*
-	/!\ : Wiki description IS NOT right
-	      see protocol.cc files in MySQL source code
-       *)
+      (* /!\ : Wiki description IS NOT right
+	      see protocol.cc files in MySQL source code *)
       let (field_table, rest) = Mp_string.length_coded_string bits in
       let (field_name, rest) = Mp_string.length_coded_string rest in
-      bitmatch rest with 
-	| { 3 : 1*8 : int, unsigned, bigendian;
-	    length : 3*8 : int, unsigned, littleendian;
-	    1: 1*8 : int, unsigned, bigendian;
-	    field_type : 1*8 : int, unsigned, bigendian;
-	    head_flags : 1*8 : int, unsigned, bigendian;
-	    rest : -1 : bitstring } -> 
-	      let (flags, rest) = 
-		if (head_flags = 2) then
-		  bitmatch rest with 
-                  | { flags : 1*8 : bitstring;
-		      rest : -1 : bitstring } -> (flags, rest)
-                else if (head_flags = 3) then 
-		  bitmatch rest with 
-                  | { flags : 2*8 : bitstring;
-		      rest : -1 : bitstring } -> (flags, rest)
-                else
-                  failwith (Printf.sprintf "Bad head_flags = %u in field packet" head_flags)
-	      in
-	      bitmatch rest with 
-              | { decimals : 1*8 : int, unsigned, bigendian;
-		  rest : -1 : bitstring } -> (
-		    let (default, _) = 
-		      if Bitstring.bitstring_length rest > 0 then 
-			Mp_binary.length_coded_binary rest 
-		      else
-			(Int64.zero, Bitstring.empty_bitstring)
-		    in
-		    { field_catalog = "";
-		      field_db = "";
-		      field_table = field_table;
-		      field_org_table = "";
-		      field_name = field_name;
-		      field_org_name = "";
-		      field_charset_number = 0;
-		      field_length = (Int64.of_int length);
-		      field_type = decode_field_packet_field_type field_type;
-		      field_flags = decode_field_packet_field_flag flags;
-		      field_decimals = decimals;
-		      field_default = default;
-		      version = Mp_protocol.Protocol_version_40 }
-		   )
+      bitmatch rest with
+      | { 3 : 1*8 : int, unsigned, bigendian;
+          length : 3*8 : int, unsigned, littleendian;
+          1: 1*8 : int, unsigned, bigendian;
+          field_type : 1*8 : int, unsigned, bigendian;
+          head_flags : 1*8 : int, unsigned, bigendian;
+          rest : -1 : bitstring } ->
+            let (flags, rest) = 
+              if (head_flags = 2) then
+                bitmatch rest with
+                | { flags : 1*8 : bitstring;
+                    rest : -1 : bitstring } -> (flags, rest)
+              else if (head_flags = 3) then 
+                bitmatch rest with 
+                | { flags : 2*8 : bitstring;
+                    rest : -1 : bitstring } -> (flags, rest)
+              else
+                failwith (Printf.sprintf "Bad head_flags = %u in field packet" head_flags)
+            in
+            bitmatch rest with 
+            | { decimals : 1*8 : int, unsigned, bigendian;
+                rest : -1 : bitstring } -> (
+                  let (default, _) = 
+                    if Bitstring.bitstring_length rest > 0 then 
+                      Mp_binary.length_coded_binary rest 
+                    else
+                      (Int64.zero, Bitstring.empty_bitstring)
+                  in
+                  { field_catalog = "";
+                    field_db = "";
+                    field_table = field_table;
+                    field_org_table = "";
+                    field_name = field_name;
+                    field_org_name = "";
+                    field_charset_number = 0;
+                    field_length = (Int64.of_int length);
+                    field_type = decode_field_packet_field_type field_type;
+                    field_flags = decode_field_packet_field_flag flags;
+                    field_decimals = decimals;
+                    field_default = default;
+                    version = Mp_protocol.Protocol_version_40 }
+                )
   in
   acc := field :: !acc
-;;

@@ -1,27 +1,27 @@
 
 (* THIS FILE MUST BE ENCODED IN ISO-8859-1 (Latin1) *)
 
-let db_name = "test_ocaml_ocmp_latin1";;
+let db_name = "test_ocaml_ocmp_latin1"
 
-let insert_var_string = "insert varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 ";;
-let update_var_string = "update varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 ";;
+let insert_var_string = "insert varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 "
+let update_var_string = "update varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 "
 
-let blobtext1 = Buffer.create 1024;;
-let blobtext2 = Buffer.create 1024;;
-let blobblob1 = Buffer.create 1024;;
-let blobblob2 = Buffer.create 1024;;
-let blobtiny1 = Buffer.create 1024;;
-let blobtiny2 = Buffer.create 1024;;
-let blobmedium1 = Buffer.create 1024;;
-let blobmedium2 = Buffer.create 1024;;
-let bloblong1 = Buffer.create 1024;;
-let bloblong2 = Buffer.create 1024;;
-let blobimg1 = Buffer.create 1024;;
-let blobimg2 = Buffer.create 1024;;
-let binary1 = Buffer.create 1024;;
-let binary2 = Buffer.create 1024;;
-let varbinary1 = Buffer.create 1024;;
-let varbinary2 = Buffer.create 1024;;
+let blobtext1 = Buffer.create 1024
+let blobtext2 = Buffer.create 1024
+let blobblob1 = Buffer.create 1024
+let blobblob2 = Buffer.create 1024
+let blobtiny1 = Buffer.create 1024
+let blobtiny2 = Buffer.create 1024
+let blobmedium1 = Buffer.create 1024
+let blobmedium2 = Buffer.create 1024
+let bloblong1 = Buffer.create 1024
+let bloblong2 = Buffer.create 1024
+let blobimg1 = Buffer.create 1024
+let blobimg2 = Buffer.create 1024
+let binary1 = Buffer.create 1024
+let binary2 = Buffer.create 1024
+let varbinary1 = Buffer.create 1024
+let varbinary2 = Buffer.create 1024
 let bit1 = 
   (* "0000000000000000000000000000000000000000000000000000001010101010" *)
   let b = Bitstring.zeroes_bitstring 64 in
@@ -31,235 +31,241 @@ let bit1 =
   let () = Bitstring.set b 60 in
   let () = Bitstring.set b 62 in
   b
-;;
+
 let bit2 = 
   Bitstring.ones_bitstring 64
-;;
+
 let records = [
-  [Mp_data.Longlongint (Big_int.big_int_of_int 1); 
-   Mp_data.Longint (Int64.of_int 10); 
-   Mp_data.Smallint (9);
-   Mp_data.Decimal (Num.num_of_string "1001234/10000"); 
-   Mp_data.Datetime ((2010, 12, 29), (14, 56, 34, Int64.zero));
-   Mp_data.Float (147.569869995);
-   Mp_data.Double (1234567891.123450);
-   Mp_data.Int24 (1677721);
-   Mp_data.Date (2010, 12, 29);
-   Mp_data.Time (Mp_data.Positive, 14, 56, 34, Int64.zero);
-   Mp_data.Year (2011);
+  [Mp_data.data_longlongint (Big_int.big_int_of_int 1);
+   Mp_data.data_longint (Int64.of_int 10);
+   Mp_data.data_smallint (9);
+   Mp_data.data_decimal (Num.num_of_string "1001234/10000");
+   Mp_data.data_datetime ((2010, 12, 29), (14, 56, 34, Int64.zero));
+   Mp_data.data_float (147.569869995);
+   Mp_data.data_double (1234567891.123450);
+   Mp_data.data_int24 (1677721);
+   Mp_data.data_date (2010, 12, 29);
+   Mp_data.data_time (Mp_data.Positive, 14, 56, 34, Int64.zero);
+   Mp_data.data_year (2011);
    (* /!\ : String has one trailing space at end in fixture but MySQL remove it silently because it's a CHAR column *)
-   Mp_data.String ("string : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789"); (* no trailing space at end *)
-   Mp_data.Varstring ("varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 ");
-   Mp_data.Blob (Buffer.add_string blobtext1 "blobtext : Happy fox is running in crop field, et un peu de texte en français avec des caractères accentués..."; blobtext1);
-   Mp_data.Blob (Buffer.add_string blobblob1 "blobblob : 123456789azertyazerty%ù;:.!+=é(-èa^@à<>;.?!"; blobblob1);
-   Mp_data.Blob (Buffer.add_string blobtiny1 "blobtiny : dijenabyw26615'é))àù$*s:;<,x,ceiore"; blobtiny1);
-   Mp_data.Blob (Buffer.add_string blobmedium1 "blobmedium : dijenabyw26615'é))àù$*s:;<,x,ceiore + dijenabyw26615'é))àù$*s:;<,x,ceiore"; blobmedium1);
-   Mp_data.Blob (Buffer.add_string bloblong1 "bloblong : dijenabyw26615'é))àù$*s:;<,x,ceiore + dijenabyw26615'é))àù$*s:;<,x,ceiore + dijenabyw26615'é))àù$*s:;<,x,ceiore"; bloblong1);
-   Mp_data.Blob (Buffer.add_string blobimg1 (Fixture_config.content_testfile1); blobimg1);
-   Mp_data.Enum ("enum2");
-   Mp_data.Set ("set1");
-   Mp_data.Null;
-   Mp_data.Timestamp ((2011, 01, 02), (8, 9, 10, Int64.zero));
-   Mp_data.Bit bit1;
-   Mp_data.Tinyint 127;
-   Mp_data.Tinyint 255;
-   Mp_data.Longint (Int64.of_string "2147483647"); 
-   Mp_data.Longint (Int64.of_string "4294967295");
-   Mp_data.Smallint (32767);
-   Mp_data.Smallint (65535);
-   Mp_data.Decimal (Num.num_of_string "99999999999999999999999999999999999999999999999999999999999999999/100000000000000000000"); 
-   Mp_data.Decimal (Num.num_of_string "99999999999999999999999999999999999999999999999999999999999999999/100000000000000000000"); 
-   Mp_data.Float (3.402823466E+38);
-   Mp_data.Float (3.402823466E+38);
-   Mp_data.Double (1.7976931348623E+308); (* should be 1.7976931348623157E+308 but this value is not accepted with some MySQL version *)
-   Mp_data.Double (1.7976931348623E+308); (* should be 1.7976931348623157E+308 but this value is not accepted with some MySQL version *)
-   Mp_data.Int24 (8388607);
-   Mp_data.Int24 (16777215);
-   Mp_data.Longlongint (Big_int.big_int_of_string "9223372036854775807");
-   Mp_data.Longlongint (Big_int.big_int_of_string "18446744073709551615");
-   Mp_data.Null;
-   Mp_data.Date (1000, 1, 1);
-   Mp_data.Datetime ((1000, 1, 1), (0, 0, 0, Int64.zero));
-   Mp_data.Timestamp ((1970, 1, 1), (1, 0, 1, Int64.zero));
-   Mp_data.Time (Mp_data.Negative, 838, 59, 59, Int64.zero);
-   Mp_data.Enum ("11E");
+   Mp_data.data_string ("string : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789"); (* no trailing space at end *)
+   Mp_data.data_varstring ("varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 ");
+   Mp_data.data_blob (Buffer.add_string blobtext1 "blobtext : Happy fox is running in crop field, et un peu de texte en français avec des caractères accentués..."; blobtext1);
+   Mp_data.data_blob (Buffer.add_string blobblob1 "blobblob : 123456789azertyazerty%ù;:.!+=é(-èa^@à<>;.?!"; blobblob1);
+   Mp_data.data_blob (Buffer.add_string blobtiny1 "blobtiny : dijenabyw26615'é))àù$*s:;<,x,ceiore"; blobtiny1);
+   Mp_data.data_blob (Buffer.add_string blobmedium1 "blobmedium : dijenabyw26615'é))àù$*s:;<,x,ceiore + dijenabyw26615'é))àù$*s:;<,x,ceiore"; blobmedium1);
+   Mp_data.data_blob (Buffer.add_string bloblong1 "bloblong : dijenabyw26615'é))àù$*s:;<,x,ceiore + dijenabyw26615'é))àù$*s:;<,x,ceiore + dijenabyw26615'é))àù$*s:;<,x,ceiore"; bloblong1);
+   Mp_data.data_blob (Buffer.add_bytes blobimg1 (Fixture_config.content_testfile1); blobimg1);
+   Mp_data.data_enum ("enum2");
+   Mp_data.data_set ("set1");
+   Mp_data.data_null;
+   Mp_data.data_timestamp ((2011, 01, 02), (8, 9, 10, Int64.zero));
+   Mp_data.data_bit bit1;
+   Mp_data.data_tinyint 127;
+   Mp_data.data_tinyint 255;
+   Mp_data.data_longint (Int64.of_string "2147483647");
+   Mp_data.data_longint (Int64.of_string "4294967295");
+   Mp_data.data_smallint (32767);
+   Mp_data.data_smallint (65535);
+   Mp_data.data_decimal (Num.num_of_string "99999999999999999999999999999999999999999999999999999999999999999/100000000000000000000"); 
+   Mp_data.data_decimal (Num.num_of_string "99999999999999999999999999999999999999999999999999999999999999999/100000000000000000000"); 
+   Mp_data.data_float (3.402823466E+38);
+   Mp_data.data_float (3.402823466E+38);
+   Mp_data.data_double (1.7976931348623E+308); (* should be 1.7976931348623157E+308 but this value is not accepted with some MySQL version *)
+   Mp_data.data_double (1.7976931348623E+308); (* should be 1.7976931348623157E+308 but this value is not accepted with some MySQL version *)
+   Mp_data.data_int24 (8388607);
+   Mp_data.data_int24 (16777215);
+   Mp_data.data_longlongint (Big_int.big_int_of_string "9223372036854775807");
+   Mp_data.data_longlongint (Big_int.big_int_of_string "18446744073709551615");
+   Mp_data.data_null;
+   Mp_data.data_date (1000, 1, 1);
+   Mp_data.data_datetime ((1000, 1, 1), (0, 0, 0, Int64.zero));
+   Mp_data.data_timestamp ((1970, 1, 1), (1, 0, 1, Int64.zero));
+   Mp_data.data_time (Mp_data.Negative, 838, 59, 59, Int64.zero);
+   Mp_data.data_enum ("11E");
    (* binary value has right padding with 0x00 so avoid the problem by putting exactly the same number of characters than the column size *)
-   Mp_data.Binary (Buffer.add_string binary1 "binary : ààéé\"\"çç''__((èè--èè&&ôö$£µ*ù1234567890auebsqtxbneu<>?,;./:§!}]@^`|[{#~¹azerty¤====+-*/.'\"abcdefghijklmnopqrstuvwx"; binary1); 
-   Mp_data.Varbinary (Buffer.add_string varbinary1 "varbinary : &ôö$£µ*eizrssù1sqtxbne ààééerjsfdjoz\"\"çç''__((èè--èè&u<>?,;./uerngpd:§!}]@^`|[{#~¹a==+-*/2zaoizhqsdptp-----erty¤==34567890aueb.'\""; varbinary1);
-   Mp_data.Longlongint (Big_int.big_int_of_int (- 15687691)); 
-   Mp_data.Longint (Int64.of_int (- 94367)); 
-   Mp_data.Smallint (- 594);
-   Mp_data.Decimal (Num.num_of_string "- 756812/10000000");
-   Mp_data.Float (- 75618.937810);
-   Mp_data.Double (- 9782518624.394);
-   Mp_data.Int24 (- 146823);
-   Mp_data.Tinyint (- 53);
- ];
-  [Mp_data.Longlongint (Big_int.big_int_of_int 2); 
-   Mp_data.Longint (Int64.of_int 20); 
-   Mp_data.Smallint (90);
-   Mp_data.Decimal (Num.num_of_string "2004321/10000");
-   Mp_data.Datetime ((1971, 07, 24), (8, 1, 2, Int64.zero));
-   Mp_data.Float (987415.8750);
-   Mp_data.Double (9876543.987654e+4);
-   Mp_data.Int24 (12345);
-   Mp_data.Date (1971, 07, 24);
-   Mp_data.Time (Mp_data.Positive, 8, 1, 2, Int64.zero);
-   Mp_data.Year (1971);
-   Mp_data.String ("string : ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-   Mp_data.Varstring ("varstring : ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-   Mp_data.Blob (Buffer.add_string blobtext2 "blobtext : lopsem lopsem lopsem three times, trois fois lopsem et une série d'accents é è ç à ù %%% "; blobtext2);
-   Mp_data.Blob (Buffer.add_string blobblob2 "blobblob : oeritdfgnkjnuerhdfgkdxeoirtijrendlkfnklxlkxerpzerpzejjffdidfosidjfiezrdsnfskdfpzerzeprsdfsdfksdfpoeporzerezp"; blobblob2);
-   Mp_data.Blob (Buffer.add_string blobtiny2 "blobtiny : 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae"; blobtiny2);
-   Mp_data.Blob (Buffer.add_string blobmedium2 "blobmedium : 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae + 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae"; blobmedium2);
-   Mp_data.Blob (Buffer.add_string bloblong2 "bloblong : 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae + 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae + 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae"; bloblong2);
-   Mp_data.Blob (Buffer.add_string blobimg2 (Fixture_config.content_testfile2); blobimg2);
-   Mp_data.Enum ("enum3");
-   Mp_data.Set ("set1,set2"); (* no space after or before comma between values*)
-   Mp_data.Null;
-   Mp_data.Timestamp ((2012, 4, 21), (12, 50, 59, Int64.zero));
-   Mp_data.Bit bit2;
-   Mp_data.Tinyint (-128);
-   Mp_data.Tinyint 0;
-   Mp_data.Longint (Int64.of_string "-2147483648"); 
-   Mp_data.Longint (Int64.zero);
-   Mp_data.Smallint (-32768);
-   Mp_data.Smallint (0);
-   Mp_data.Decimal (Num.num_of_string "-99999999999999999999999999999999999999999999999999999999999999999/100000000000000000000"); 
-   Mp_data.Decimal (Num.num_of_string "0"); 
-   Mp_data.Float (-1.175494351E-38);
-   Mp_data.Float (0.0);
-   Mp_data.Double (-2.2250738585072014E-308);
-   Mp_data.Double (0.0);
-   Mp_data.Int24 (-8388608);
-   Mp_data.Int24 (0);
-   Mp_data.Longlongint (Big_int.big_int_of_string "-9223372036854775808");
-   Mp_data.Longlongint (Big_int.big_int_of_string "0");
-   Mp_data.Null;
-   Mp_data.Date (9999, 12, 31);
-   Mp_data.Datetime ((9999, 12, 31), (23, 59, 59, Int64.zero));
-   Mp_data.Timestamp ((2038, 1, 19), (3, 14, 7, Int64.zero));
-   Mp_data.Time (Mp_data.Positive, 838, 59, 59, Int64.zero);
-   Mp_data.Null;
+   Mp_data.data_binary (Buffer.add_string binary1 "binary : ààéé\"\"çç''__((èè--èè&&ôö$£µ*ù1234567890auebsqtxbneu<>?,;./:§!}]@^`|[{#~¹azerty¤====+-*/.'\"abcdefghijklmnopqrstuvwx"; binary1);
+   Mp_data.data_varbinary (Buffer.add_string varbinary1 "varbinary : &ôö$£µ*eizrssù1sqtxbne ààééerjsfdjoz\"\"çç''__((èè--èè&u<>?,;./uerngpd:§!}]@^`|[{#~¹a==+-*/2zaoizhqsdptp-----erty¤==34567890aueb.'\""; varbinary1);
+   Mp_data.data_longlongint (Big_int.big_int_of_int (- 15687691));
+   Mp_data.data_longint (Int64.of_int (- 94367));
+   Mp_data.data_smallint (- 594);
+   Mp_data.data_decimal (Num.num_of_string "- 756812/10000000");
+   Mp_data.data_float (- 75618.937810);
+   Mp_data.data_double (- 9782518624.394);
+   Mp_data.data_int24 (- 146823);
+   Mp_data.data_tinyint (- 53);
+  ];
+  [Mp_data.data_longlongint (Big_int.big_int_of_int 2);
+   Mp_data.data_longint (Int64.of_int 20);
+   Mp_data.data_smallint (90);
+   Mp_data.data_decimal (Num.num_of_string "2004321/10000");
+   Mp_data.data_datetime ((1971, 07, 24), (8, 1, 2, Int64.zero));
+   Mp_data.data_float (987415.8750);
+   Mp_data.data_double (9876543.987654e+4);
+   Mp_data.data_int24 (12345);
+   Mp_data.data_date (1971, 07, 24);
+   Mp_data.data_time (Mp_data.Positive, 8, 1, 2, Int64.zero);
+   Mp_data.data_year (1971);
+   Mp_data.data_string ("string : ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+   Mp_data.data_varstring ("varstring : ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+   Mp_data.data_blob (Buffer.add_string blobtext2 "blobtext : lopsem lopsem lopsem three times, trois fois lopsem et une série d'accents é è ç à ù %%% "; blobtext2);
+   Mp_data.data_blob (Buffer.add_string blobblob2 "blobblob : oeritdfgnkjnuerhdfgkdxeoirtijrendlkfnklxlkxerpzerpzejjffdidfosidjfiezrdsnfskdfpzerzeprsdfsdfksdfpoeporzerezp"; blobblob2);
+   Mp_data.data_blob (Buffer.add_string blobtiny2 "blobtiny : 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae"; blobtiny2);
+   Mp_data.data_blob (Buffer.add_string blobmedium2 "blobmedium : 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae + 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae"; blobmedium2);
+   Mp_data.data_blob (Buffer.add_string bloblong2 "bloblong : 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae + 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae + 002çç\"ééén<znsdizpre89*-56211sf1sdf6azeae"; bloblong2);
+   Mp_data.data_blob (Buffer.add_bytes blobimg2 (Fixture_config.content_testfile2); blobimg2);
+   Mp_data.data_enum ("enum3");
+   Mp_data.data_set ("set1,set2"); (* no space after or before comma between values*)
+   Mp_data.data_null;
+   Mp_data.data_timestamp ((2012, 4, 21), (12, 50, 59, Int64.zero));
+   Mp_data.data_bit bit2;
+   Mp_data.data_tinyint (-128);
+   Mp_data.data_tinyint 0;
+   Mp_data.data_longint (Int64.of_string "-2147483648");
+   Mp_data.data_longint (Int64.zero);
+   Mp_data.data_smallint (-32768);
+   Mp_data.data_smallint (0);
+   Mp_data.data_decimal (Num.num_of_string "-99999999999999999999999999999999999999999999999999999999999999999/100000000000000000000"); 
+   Mp_data.data_decimal (Num.num_of_string "0");
+   Mp_data.data_float (-1.175494351E-38);
+   Mp_data.data_float (0.0);
+   Mp_data.data_double (-2.2250738585072014E-308);
+   Mp_data.data_double (0.0);
+   Mp_data.data_int24 (-8388608);
+   Mp_data.data_int24 (0);
+   Mp_data.data_longlongint (Big_int.big_int_of_string "-9223372036854775808");
+   Mp_data.data_longlongint (Big_int.big_int_of_string "0");
+   Mp_data.data_null;
+   Mp_data.data_date (9999, 12, 31);
+   Mp_data.data_datetime ((9999, 12, 31), (23, 59, 59, Int64.zero));
+   Mp_data.data_timestamp ((2038, 1, 19), (3, 14, 7, Int64.zero));
+   Mp_data.data_time (Mp_data.Positive, 838, 59, 59, Int64.zero);
+   Mp_data.data_null;
    (* binary value has right padding with 0x00 so avoid the problem by putting exactly the same number of characters than the column size *)
-   Mp_data.Binary (Buffer.add_string binary2 "binary : ààéé\"\"çç''__((èè--èè&&ôö$£µ*ù1234567890auebsqtxbneu<>?,;./:§!}]@^`|[{#~¹azerty¤====+-*/.'\"abcdefghijklmnopqrstuvwx"; binary2);
-   Mp_data.Varbinary (Buffer.add_string varbinary2 "varbinary : \032&ôö$£µ*eizrssù1sqtxbne ààééerjsfdjoz\"\"çç''__((èè--èè&u<>?,;./uerngpd:§!}]@^`|[{#~¹a==+-*/2zaoizhqsdptp-----erty¤==34567890aueb.'\""; varbinary2);
-   Mp_data.Longlongint (Big_int.big_int_of_int (- 10954041)); 
-   Mp_data.Longint (Int64.of_int (- 59140367)); 
-   Mp_data.Smallint (- 2964);
-   Mp_data.Decimal (Num.num_of_string "- 5694/6250");
-   Mp_data.Float (- 18.810);
-   Mp_data.Double (- 6657425211.1111111);
-   Mp_data.Int24 (- 95470);
-   Mp_data.Tinyint (- 61);
- ]
-];;
+   Mp_data.data_binary (Buffer.add_string binary2 "binary : ààéé\"\"çç''__((èè--èè&&ôö$£µ*ù1234567890auebsqtxbneu<>?,;./:§!}]@^`|[{#~¹azerty¤====+-*/.'\"abcdefghijklmnopqrstuvwx"; binary2);
+   Mp_data.data_varbinary (Buffer.add_string varbinary2 "varbinary : \032&ôö$£µ*eizrssù1sqtxbne ààééerjsfdjoz\"\"çç''__((èè--èè&u<>?,;./uerngpd:§!}]@^`|[{#~¹a==+-*/2zaoizhqsdptp-----erty¤==34567890aueb.'\""; varbinary2);
+   Mp_data.data_longlongint (Big_int.big_int_of_int (- 10954041));
+   Mp_data.data_longint (Int64.of_int (- 59140367));
+   Mp_data.data_smallint (- 2964);
+   Mp_data.data_decimal (Num.num_of_string "- 5694/6250");
+   Mp_data.data_float (- 18.810);
+   Mp_data.data_double (- 6657425211.1111111);
+   Mp_data.data_int24 (- 95470);
+   Mp_data.data_tinyint (- 61);
+  ]
+]
 
 (* Big blog with the PDF file *)
-let blobbig = Buffer.create 16384;;
+let blobbig = Buffer.create 16384
 let records_blobbig = [
-  [Mp_data.Blob (Buffer.add_string blobbig (Fixture_config.content_testfile3); blobbig)];
-];;
+  [Mp_data.data_blob (Buffer.add_bytes blobbig (Fixture_config.content_testfile3); blobbig)];
+]
 
 (* Several blogs in the same record *)
-let manyblob = Buffer.create 2097152;;
-let () = Buffer.add_string manyblob (Fixture_config.content_testfile4);;
+let manyblob = Buffer.create 2097152
+let () = Buffer.add_bytes manyblob (Fixture_config.content_testfile4)
 let records_manyblobs = [
-  [Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
- ];
-  [Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
-   Mp_data.Blob manyblob;
- ];
-];;
+  [Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+  ];
+  [Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+   Mp_data.data_blob manyblob;
+  ];
+]
 
 (* more tests for date/time/datetime/timestamp and subseconds *)
 let records_date version = 
   if version >= 5611 then
     [
-     [Mp_data.Date (0, 0, 0);
-      Mp_data.Time (Mp_data.Positive, 0, 0, 0, Int64.zero);
-      Mp_data.Datetime ((0, 0, 0), (0, 0, 0, Int64.zero));
-      Mp_data.Timestamp ((0, 0, 0), (0, 0, 0, Int64.zero));
-    ];
-     [Mp_data.Date (1992, 12, 31);
-      Mp_data.Time (Mp_data.Positive, 21, 19, 49, Int64.zero);
-      Mp_data.Datetime ((1990, 11, 5), (13, 17, 5, Int64.zero)); (* 5 seconds if version >= 5611 *)
-      Mp_data.Timestamp ((2000, 1, 1), (1, 1, 15, Int64.zero));
-    ];
-   ]
+      [Mp_data.data_date (0, 0, 0);
+       Mp_data.data_time (Mp_data.Positive, 0, 0, 0, Int64.zero);
+       Mp_data.data_datetime ((0, 0, 0), (0, 0, 0, Int64.zero));
+       Mp_data.data_timestamp ((0, 0, 0), (0, 0, 0, Int64.zero));
+      ];
+      [Mp_data.data_date (1992, 12, 31);
+       Mp_data.data_time (Mp_data.Positive, 21, 19, 49, Int64.zero);
+       Mp_data.data_datetime ((1990, 11, 5), (13, 17, 5, Int64.zero)); (* 5 seconds if version >= 5611 *)
+       Mp_data.data_timestamp ((2000, 1, 1), (1, 1, 15, Int64.zero));
+      ];
+    ]
   else
     [
-     [Mp_data.Date (0, 0, 0);
-      Mp_data.Time (Mp_data.Positive, 0, 0, 0, Int64.zero);
-      Mp_data.Datetime ((0, 0, 0), (0, 0, 0, Int64.zero));
-      Mp_data.Timestamp ((0, 0, 0), (0, 0, 0, Int64.zero));
-    ];
-     [Mp_data.Date (1992, 12, 31);
-      Mp_data.Time (Mp_data.Positive, 21, 19, 49, Int64.zero);
-      Mp_data.Datetime ((1990, 11, 5), (13, 17, 4, Int64.zero));
-      Mp_data.Timestamp ((2000, 1, 1), (1, 1, 15, Int64.zero));
-    ];
-   ];;
+      [Mp_data.data_date (0, 0, 0);
+       Mp_data.data_time (Mp_data.Positive, 0, 0, 0, Int64.zero);
+       Mp_data.data_datetime ((0, 0, 0), (0, 0, 0, Int64.zero));
+       Mp_data.data_timestamp ((0, 0, 0), (0, 0, 0, Int64.zero));
+      ];
+      [Mp_data.data_date (1992, 12, 31);
+       Mp_data.data_time (Mp_data.Positive, 21, 19, 49, Int64.zero);
+       Mp_data.data_datetime ((1990, 11, 5), (13, 17, 4, Int64.zero));
+       Mp_data.data_timestamp ((2000, 1, 1), (1, 1, 15, Int64.zero));
+      ];
+    ]
 
-let bigbinarybuffer1 = Buffer.create 255;;
-let bigbinarybuffer2 = Buffer.create 255;;
+let bigbinarybuffer1 = Buffer.create 255
+let bigbinarybuffer2 = Buffer.create 255
 let records_bigstring = [
-  [Mp_data.String (Fixture_config.build_string 255); Mp_data.Binary (Buffer.add_string bigbinarybuffer1 (Fixture_config.build_string 255); bigbinarybuffer1);];
-  [Mp_data.String (Fixture_config.build_string 255); Mp_data.Binary (Buffer.add_string bigbinarybuffer2 (Fixture_config.build_string 255); bigbinarybuffer2);];
-];;
+  [
+    Mp_data.data_string (Fixture_config.build_string 255);
+    Mp_data.data_binary (Buffer.add_string bigbinarybuffer1 (Fixture_config.build_string 255); bigbinarybuffer1);
+  ];
+  [
+    Mp_data.data_string (Fixture_config.build_string 255);
+    Mp_data.data_binary (Buffer.add_string bigbinarybuffer2 (Fixture_config.build_string 255); bigbinarybuffer2);
+  ];
+]
 
 let records_bigvarchar = [
-  [Mp_data.Varstring (Fixture_config.build_string 65532)];
-  [Mp_data.Varstring (Fixture_config.build_string 65532)];
-];;
+  [Mp_data.data_varstring (Fixture_config.build_string 65532)];
+  [Mp_data.data_varstring (Fixture_config.build_string 65532)];
+]
 
-let bigvarbinarybuffer1 = Buffer.create 65532;;
-let bigvarbinarybuffer2 = Buffer.create 65532;;
+let bigvarbinarybuffer1 = Buffer.create 65532
+let bigvarbinarybuffer2 = Buffer.create 65532
 let records_bigvarbinary = [
-  [Mp_data.Varbinary (Buffer.add_string bigvarbinarybuffer1 (Fixture_config.build_string 65532); bigvarbinarybuffer1);];
-  [Mp_data.Varbinary (Buffer.add_string bigvarbinarybuffer2 (Fixture_config.build_string 65532); bigvarbinarybuffer2);];
-];;
+  [Mp_data.data_varbinary (Buffer.add_string bigvarbinarybuffer1 (Fixture_config.build_string 65532); bigvarbinarybuffer1);];
+  [Mp_data.data_varbinary (Buffer.add_string bigvarbinarybuffer2 (Fixture_config.build_string 65532); bigvarbinarybuffer2);];
+]
 
 let records_proc_one_result = [
-  [Mp_data.Longlongint (Big_int.big_int_of_int 100);
-   Mp_data.Varstring ("ABC");
- ]
-];;
+  [Mp_data.data_longlongint (Big_int.big_int_of_int 100);
+   Mp_data.data_varstring ("ABC");
+  ]
+]
 
 let records_proc_multiple_results = [
-  [Mp_data.Longlongint (Big_int.big_int_of_int 1);
-   Mp_data.Varstring ("A");
- ];
-  [Mp_data.Longlongint (Big_int.big_int_of_int 2);
-   Mp_data.Varstring ("B");
- ];
-  [Mp_data.Longlongint (Big_int.big_int_of_int 3);
-   Mp_data.Varstring ("C");
- ]
-];;
+  [Mp_data.data_longlongint (Big_int.big_int_of_int 1);
+   Mp_data.data_varstring ("A");
+  ];
+  [Mp_data.data_longlongint (Big_int.big_int_of_int 2);
+   Mp_data.data_varstring ("B");
+  ];
+  [Mp_data.data_longlongint (Big_int.big_int_of_int 3);
+   Mp_data.data_varstring ("C");
+  ]
+]
 
 (* right value for the iter test *)
-let ok_value_iter = "2010-12-29" ^ "varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 ";;
+let ok_value_iter = "2010-12-29" ^ "varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 "
 
 let sql =
-"
+  "
 USE " ^ db_name ^ ";
 
 SET NAMES 'latin1';
@@ -433,4 +439,4 @@ BEGIN
 END//
 delimiter ;
 
-";;
+"

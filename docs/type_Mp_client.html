@@ -50,19 +50,9 @@
 &nbsp;&nbsp;&nbsp;&nbsp;prepare_columns_fields&nbsp;:&nbsp;<span class="constructor">Mp_field_packet</span>.field_packet&nbsp;list;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;prepare_columns_names&nbsp;:&nbsp;<span class="constructor">Mp_field</span>.field_name&nbsp;list;<br>
 &nbsp;&nbsp;}<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;result&nbsp;=&nbsp;<span class="keyword">private</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Result_set</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Mp_result_set_packet</span>.result_select<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Result_ok</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Mp_client</span>.dml_dcl_result<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Result_multiple</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Mp_client</span>.result&nbsp;list<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;executable_statement&nbsp;=&nbsp;<span class="keyword">private</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Created_statement</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Prepared_statement</span>&nbsp;<span class="keyword">of</span>&nbsp;(string&nbsp;*&nbsp;<span class="constructor">Mp_client</span>.prepare_result)<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;execute_result&nbsp;=&nbsp;<span class="keyword">private</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Executed_statement</span>&nbsp;<span class="keyword">of</span>&nbsp;(string&nbsp;*&nbsp;<span class="constructor">Mp_client</span>.result)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Executed_prepared_statement</span>&nbsp;<span class="keyword">of</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(string&nbsp;*&nbsp;<span class="constructor">Mp_client</span>.prepare_result&nbsp;*&nbsp;<span class="constructor">Mp_client</span>.result)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Executed_prepared_statement_with_cursor</span>&nbsp;<span class="keyword">of</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(string&nbsp;*&nbsp;<span class="constructor">Mp_client</span>.prepare_result)<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;executable_statement<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;execute_result<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;result<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;error_exception_to_string&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.client_error&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;dml_dcl_result_to_string&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.dml_dcl_result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;configuration&nbsp;:<br>
@@ -86,26 +76,28 @@
 &nbsp;&nbsp;&nbsp;&nbsp;connection:<span class="constructor">Mp_client</span>.connection&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;statement:<span class="constructor">Mp_client</span>.executable_statement&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Mp_client</span>.executable_statement<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_created_statement&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.executable_statement&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_prepared_statement&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Mp_client</span>.executable_statement&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;*&nbsp;<span class="constructor">Mp_client</span>.prepare_result<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;execute&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;connection:<span class="constructor">Mp_client</span>.connection&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;statement:<span class="constructor">Mp_client</span>.executable_statement&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?filter:((string&nbsp;*&nbsp;int)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.native_data&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool)&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?iter:((string&nbsp;*&nbsp;int)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.native_data&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit)&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?filter:((string&nbsp;*&nbsp;int)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool)&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?iter:((string&nbsp;*&nbsp;int)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit)&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?return_all_raw_mysql_data:bool&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?params:<span class="constructor">Mp_data</span>.native_data&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?params:<span class="constructor">Mp_data</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?bind:<span class="constructor">Mp_execute</span>.bind&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?flag:<span class="constructor">Mp_execute</span>.flag&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_client</span>.execute_result<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.execute_result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_client</span>.result<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result_set&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Mp_client</span>.execute_result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_result_set_packet</span>.result_select<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result_multiple&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.execute_result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_client</span>.result&nbsp;list<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result_ok&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.execute_result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_client</span>.dml_dcl_result<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result_set&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_result_set_packet</span>.result_select<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_result_ok&nbsp;:&nbsp;<span class="constructor">Mp_client</span>.result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_client</span>.dml_dcl_result<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fetch&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;connection:<span class="constructor">Mp_client</span>.connection&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;statement:<span class="constructor">Mp_client</span>.execute_result&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?nb_rows:int64&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?filter:((string&nbsp;*&nbsp;int)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.native_data&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool)&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?iter:((string&nbsp;*&nbsp;int)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.native_data&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit)&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?filter:((string&nbsp;*&nbsp;int)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool)&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?iter:((string&nbsp;*&nbsp;int)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_data</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit)&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?return_all_raw_mysql_data:bool&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_client</span>.result<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_fetch_result_set&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Mp_client</span>.result&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Mp_result_set_packet</span>.result_select<br>

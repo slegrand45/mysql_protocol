@@ -17,16 +17,16 @@ let bench f n =
   let max = ref 0.0 in
   let avg = ref 0.0 in
   let () = 
-    for i = 1 to n do
+    for _ = 1 to n do
       let start = Unix.gettimeofday () in
       let () = f () in
       let stop = Unix.gettimeofday () in
       let time = stop -. start in
       let () = 
-	if (time < !min) then min := time
+        if (time < !min) then min := time
       in
       let () = 
-	if (time > !max) then max := time
+        if (time > !max) then max := time
       in
       total_time := !total_time +. time
     done
@@ -58,7 +58,7 @@ let () =
     for i = 1 to nb_run do
       let () = print_newline () in
       let () = print_endline (Printf.sprintf "Run %u (one run = %u iter):" i nb_iter) in
-      
+
       let (time, min, max, avg) = bench Bench_mysql_protocol.run nb_iter in
       let () = if (time < !min_mp) then min_mp := time in
       let () = if (time > !max_mp) then max_mp := time in
@@ -88,4 +88,3 @@ let () =
   let () = print_endline (Printf.sprintf "  MySQL Protocol  (seconds): Total=%f  Avg (total time / %u)=%f  Std deviation=%f  Min (1 run)=%f  Max (1 run)=%f" !time_mp nb_run !avg_mp sd_mp !min_mp !max_mp) in
   let () = print_endline (Printf.sprintf "  MySQL C library (seconds): Total=%f  Avg (total time / %u)=%f  Std deviation=%f  Min (1 run)=%f  Max (1 run)=%f" !time_mc nb_run !avg_mc sd_mc !min_mc !max_mc) in
   ()
-;;

@@ -1,4 +1,3 @@
-
 let xor_string s1 s2 = 
   (* s1 and s2 must have the same length *)
   let s = ref "" in
@@ -12,7 +11,6 @@ let xor_string s1 s2 =
   in
   let () = String.iter f s1 in
   !s
-;;
 
 let encode_client_password scramble password = 
   let hash s = Cryptokit.hash_string (Cryptokit.Hash.sha1()) s in
@@ -21,7 +19,6 @@ let encode_client_password scramble password =
   let hash_stage3 = hash (scramble ^ hash_stage2) in
   let reply = xor_string hash_stage1 hash_stage3 in
   reply
-;;
 
 (* 
    /!\ : bad capabilities can prevent right authentication
@@ -29,7 +26,7 @@ let encode_client_password scramble password =
    Client_long_password; Client_long_flag; Client_protocol_41; 
    Client_transactions; Client_secure_connection; 
  *)
-let client_authentication_packet ~ic ~oc ~handshake ~capabilities ~max_packet_size ~charset_number ~user ~password ~databasename ~auth_plugin_name =
+let client_authentication_packet ~handshake ~capabilities ~max_packet_size ~charset_number ~user ~password ~databasename ~auth_plugin_name =
   let client_flags = Int64.of_int (Mp_capabilities.encode_client_capabilities capabilities) in
   let filler = Bitstring.make_bitstring (23*8) '\x00' in
   let user = Mp_string.make_null_terminated_string user in
@@ -59,18 +56,16 @@ let client_authentication_packet ~ic ~oc ~handshake ~capabilities ~max_packet_si
   let length_plugin = String.length plugin in
 
   let bits = BITSTRING {
-    client_flags : Mp_bitstring.compute32 : int, unsigned, littleendian;
-    max_packet_size : Mp_bitstring.compute32 : int, unsigned, bigendian;
-    charset_number : 1*8 : int, unsigned, bigendian;
-    filler : 23*8 : bitstring;
-    user : length_user*8 : string;
-    credential : length_credential*8 : string;
-    db : -1 : bitstring;
-    plugin : length_plugin*8 : string
-  }
+      client_flags : Mp_bitstring.compute32 : int, unsigned, littleendian;
+      max_packet_size : Mp_bitstring.compute32 : int, unsigned, bigendian;
+      charset_number : 1*8 : int, unsigned, bigendian;
+      filler : 23*8 : bitstring;
+      user : length_user*8 : string;
+      credential : length_credential*8 : string;
+      db : -1 : bitstring;
+      plugin : length_plugin*8 : string
+    }
   in 
   let bits = Bitstring.concat [bits; db] in
   let bits = Mp_packet.make_packet handshake.Mp_handshake.packet_number bits in
-    bits
-;;
-
+  bits

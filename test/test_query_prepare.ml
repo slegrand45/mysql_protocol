@@ -1,10 +1,10 @@
 
-open OUnit;;
+open OUnit
 
-let fields = Test_query_select.fields;;
-let mysql_fields = Test_query_select.mysql_fields;;
+let fields = Test_query_select.fields
+let mysql_fields = Test_query_select.mysql_fields
 
-let field_name_questionmark = ("?", 0);;
+let field_name_questionmark = ("?", 0)
 let mysql_field_questionmark = {
   Mp_field_packet.field_catalog = "def";
   Mp_field_packet.field_db = "";
@@ -21,7 +21,6 @@ let mysql_field_questionmark = {
   Mp_field_packet.field_default = Int64.zero;
   Mp_field_packet.version = Mp_protocol.Protocol_version_41;
 }
-;;
 
 let build_ok_prepare db_name charset version = 
   { Mp_client.prepare_handler = Int64.of_int 1;
@@ -33,7 +32,6 @@ let build_ok_prepare db_name charset version =
     Mp_client.prepare_columns_fields = (mysql_fields db_name charset version);
     Mp_client.prepare_columns_names = fields;
   }
-;;
 
 let test1 connection db_name version = 
   let () = 
@@ -41,16 +39,14 @@ let test1 connection db_name version =
     let stmt = Mp_client.create_statement_from_string sql in
     let f = 
       let p = Mp_client.prepare ~connection:connection ~statement:stmt in
-      match p with
-      | Mp_client.Prepared_statement (_, prepared) -> prepared
-      | _ -> assert false
+      let (_, p) = Mp_client.get_prepared_statement p in
+      p
     in
     assert_equal ~msg:sql 
       (build_ok_prepare db_name connection.Mp_client.configuration.Mp_client.charset_number version)
       (Test_query.try_query ~f:f ~sql:sql)
   in
   ()
-;;
 
 let test host connection encoding _ = 
   let (version, _, _, _, _, _) = host in
@@ -58,20 +54,20 @@ let test host connection encoding _ =
     val (
       match encoding with
       | Mp_charset.Latin1 -> (
-	  let module E = struct
-	    include Fixture_latin1
-	  end
-	  in (module E : Fixture.FIXTURE)
-	 )
+          let module E = struct
+            include Fixture_latin1
+          end
+          in (module E : Fixture.FIXTURE)
+        )
       | Mp_charset.Utf8 -> (
-	  let module E = struct
-	    include Fixture_utf8
-	  end
-	  in (module E : Fixture.FIXTURE)
-	 )
+          let module E = struct
+            include Fixture_utf8
+          end
+          in (module E : Fixture.FIXTURE)
+        )
       | _ -> assert false
-     ) : Fixture.FIXTURE
-   )
+    ) : Fixture.FIXTURE
+  )
   in
   try
     test1 connection F.db_name version
@@ -79,5 +75,4 @@ let test host connection encoding _ =
   | Mp_client.Error err as e -> (
       let () = prerr_endline (Mp_client.error_exception_to_string err) in
       raise e
-     )
-;;
+    )

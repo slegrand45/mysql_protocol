@@ -6,5 +6,4 @@ let try_query ~f ~sql =
   | Mp_client.Error err as e -> (
       let () = print_endline (Printf.sprintf "%s : Error : %s" sql (Mp_client.error_exception_to_string err)) in
       raise e
-     )
-;;
+    )

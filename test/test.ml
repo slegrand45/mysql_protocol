@@ -61,6 +61,7 @@ let suite host connection encoding config =
            "test_ping" >:: Test_ping.test connection;
            "test_change_user" >:: Test_change_user.test connection;
            "test_connect" >:: Test_connect.test host config encoding;
+           "test_auto_increment" >:: Test_query_auto_increment.test connection;
            "test_client" >:: Test_client.test host encoding;]
   in
   let l =

@@ -421,6 +421,27 @@ INSERT INTO test_ocmp_manyblobs (f_blob1_def_null, f_blob2_def_null, f_blob3_def
 INSERT INTO test_ocmp_manyblobs (f_blob1_def_null, f_blob2_def_null, f_blob3_def_null, f_blob4_def_null, f_blob5_def_null, f_blob6_def_null, f_blob7_def_null, f_blob8_def_null, f_blob9_def_null, f_blob10_def_null)
   VALUES (LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'), LOAD_FILE('" ^ Fixture_config.testfile4 ^ "'));
 
+DROP TABLE IF EXISTS test_ocmp_auto_increment_ui;
+CREATE TABLE test_ocmp_auto_increment_ui (
+f_autoinc INT UNSIGNED AUTO_INCREMENT NOT NULL,
+f_int INT,
+PRIMARY KEY (f_autoinc)
+);
+
+DROP TABLE IF EXISTS test_ocmp_auto_increment_ubi;
+CREATE TABLE test_ocmp_auto_increment_ubi (
+f_autoinc BIGINT UNSIGNED AUTO_INCREMENT NOT NULL,
+f_int INT,
+PRIMARY KEY (f_autoinc)
+);
+
+DROP TABLE IF EXISTS test_ocmp_auto_increment_sbi;
+CREATE TABLE test_ocmp_auto_increment_sbi (
+f_autoinc BIGINT SIGNED AUTO_INCREMENT NOT NULL,
+f_int INT,
+PRIMARY KEY (f_autoinc)
+);
+
 DROP PROCEDURE IF EXISTS test_ocmp_proc_one_result;
 delimiter //
 CREATE PROCEDURE test_ocmp_proc_one_result()

@@ -26,7 +26,7 @@ type connection = {
 
 type dml_dcl_result = {
   affected_rows : Int64.t;
-  insert_id : Int64.t;
+  insert_id : (Int64.t * Big_int.big_int);
   server_status : int;
   warning_count : int;
   message : string;
@@ -63,9 +63,10 @@ let create_statement_from_string s =
 let error_exception_to_string e = 
   Printf.sprintf "Errno: %u / Sql state: %s / Message: %s" e.client_error_errno e.client_error_sqlstate e.client_error_message
 
-let dml_dcl_result_to_string r = 
-  Printf.sprintf "Affected rows: %Lu / Insert id: %Lu / Server status: %d / Warning count: %u : Message: %s" 
-    r.affected_rows r.insert_id r.server_status r.warning_count r.message
+let dml_dcl_result_to_string r =
+  let (insert_id_int64, insert_id_big_int) = r.insert_id in
+  Printf.sprintf "Affected rows: %Lu / Insert id: (%Lu, %s) / Server status: %d / Warning count: %u : Message: %s"
+    r.affected_rows insert_id_int64 (Big_int.string_of_big_int insert_id_big_int) r.server_status r.warning_count r.message
 
 let configuration ~user ~password ~sockaddr ?(databasename = "") ?(max_packet_size) ?(charset) ?(capabilities) () =
   let max_packet_size = 

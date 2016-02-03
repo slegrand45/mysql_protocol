@@ -3,15 +3,37 @@ open OUnit
 
 let build_ok_delete affected status = 
   { Mp_client.affected_rows = affected;
-    Mp_client.insert_id = Int64.zero;
+    Mp_client.insert_id = (Int64.zero, Big_int.zero_big_int);
     Mp_client.server_status = status;
     Mp_client.warning_count = 0;
     Mp_client.message = "";
   }
 
-let result_equals ok1 r2 = 
+let result_equals ok1 r =
   let ok2 = build_ok_delete ok1.Mp_client.affected_rows 8704 in
-  if (ok1 = r2 || ok2 = r2) then
+
+  let r_eq ok r =
+    let affected_rows_ok = ok.Mp_client.affected_rows in
+    let (insert_id_int64_ok, insert_id_big_int_ok) = ok.Mp_client.insert_id in
+    let server_status_ok = ok.Mp_client.server_status in
+    let warning_count_ok = ok.Mp_client.warning_count in
+    let message_ok = ok.Mp_client.message in
+
+    let affected_rows_r = r.Mp_client.affected_rows in
+    let (insert_id_int64_r, insert_id_big_int_r) = r.Mp_client.insert_id in
+    let server_status_r = r.Mp_client.server_status in
+    let warning_count_r = r.Mp_client.warning_count in
+    let message_r = r.Mp_client.message in
+
+    (affected_rows_ok = affected_rows_r)
+    && (Int64.compare insert_id_int64_ok insert_id_int64_r = 0)
+    && (Big_int.compare_big_int insert_id_big_int_ok insert_id_big_int_r = 0)
+    && (server_status_ok = server_status_r)
+    && (warning_count_ok = warning_count_r)
+    && (message_ok = message_r)
+  in
+
+  if (r_eq ok1 r || r_eq ok2 r) then
     true
   else
     false

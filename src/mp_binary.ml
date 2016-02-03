@@ -17,7 +17,7 @@ let length_coded_binary bits =
           in
           bitmatch rest with
           | { i : 2*8 : int, unsigned, littleendian;
-              rest : -1 : bitstring } -> 
+              rest : -1 : bitstring } ->
                 (Int64.of_int i, rest)
         else if byte1 = 253 then (* three bytes integer *)
           let () = 
@@ -27,7 +27,7 @@ let length_coded_binary bits =
           in
           bitmatch rest with
           | { i : 3*8 : int, unsigned, littleendian;
-              rest : -1 : bitstring } -> 
+              rest : -1 : bitstring } ->
               (Int64.of_int i, rest)
         else if byte1 = 254 then (* height bytes integer *)
           let () = 
@@ -37,7 +37,7 @@ let length_coded_binary bits =
           in
           bitmatch rest with
           | { i : 8*8 : int, unsigned, littleendian; (* /!\ unsigned 64 bits *)
-              rest : -1 : bitstring } -> 
+              rest : -1 : bitstring } ->
               (i, rest)
         else (
           failwith (Printf.sprintf "Unknown byte1 = %u in length coded binary" byte1)

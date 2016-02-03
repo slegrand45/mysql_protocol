@@ -188,4 +188,4 @@ val type_to_string : t -> string
 (**
    Convert column data to string
 *)
-val to_string : t -> string
+val to_string : t -> string option

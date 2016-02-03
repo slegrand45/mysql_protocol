@@ -362,6 +362,12 @@ let test_manyblobs connection records_manyblobs db_name =
   in
   ()  
 
+let data_to_string d =
+  let s = Mp_data.to_string d in
+  match s with
+  | None -> "NULL"
+  | Some s -> s
+
 let test_filter_iter connection records ok_value_iter = 
   let () = 
     let sql = "SELECT * FROM test_ocmp" in
@@ -380,7 +386,7 @@ let test_filter_iter connection records ok_value_iter =
     let iter acc fields row = 
       let d = List.nth row (List.assoc "f_date_null_no_def" fields) in
       let s = List.nth row (List.assoc "f_varstring_null_no_def" fields) in
-      acc := (Mp_data.to_string d) ^ (Mp_data.to_string s) 
+      acc := (data_to_string d) ^ (data_to_string s)
     in
     let p = Mp_client.execute ~connection:connection ~statement:p ~flag:Mp_execute.Cursor_type_read_only () in
     let () = 

@@ -334,6 +334,12 @@ let fields = [
 let fields_equals l1 l2 = 
   l1 = l2
 
+let data_to_string d =
+  let s = Mp_data.to_string d in
+  match s with
+  | None -> "NULL"
+  | Some s -> s
+
 let data_equals d1 d2 =
   let f : bool -> Mp_data.t -> Mp_data.t -> bool = fun acc e1 e2 ->
     let comparison = Mp_data.eq e1 e2 in
@@ -342,11 +348,11 @@ let data_equals d1 d2 =
         let () = 
           if (print_warning) then (
             prerr_endline (Printf.sprintf "Warning: string comparison for float/double: e1=%s e2=%s" 
-                             (Mp_data.to_string e1) (Mp_data.to_string e2))
+                             (data_to_string e1) (data_to_string e2))
           )
         in
-        let se1 = Mp_data.to_string e1 in
-        let se2 = Mp_data.to_string e2 in
+        let se1 = data_to_string e1 in
+        let se2 = data_to_string e2 in
         let se1 =
           if (se1 = "3.402823466e+38") then 
             let () = 
@@ -420,7 +426,7 @@ let data_equals d1 d2 =
         | Mp_data.Float _ -> comparison_float_double ()
         | Mp_data.Double _ -> comparison_float_double ()
         | Mp_data.Blob _ -> (
-            let se2 = Mp_data.to_string e2 in
+            let se2 = data_to_string e2 in
             if (se2 = "NULL") then (
               let () = 
                 if (print_warning) then
@@ -442,12 +448,12 @@ let data_equals d1 d2 =
       let blob_binary_varbinary () =
         if (not comparison) then (
           let () = prerr_endline (Printf.sprintf "Failure in binary data comparison \n") in
-          let () = prerr_endline (Printf.sprintf "MD5 - e1: %s" (Digest.to_hex (Digest.string (Mp_data.to_string e1)))) in
-          let () = prerr_endline (Printf.sprintf "MD5 - e2: %s" (Digest.to_hex (Digest.string (Mp_data.to_string e2)))) in
+          let () = prerr_endline (Printf.sprintf "MD5 - e1: %s" (Digest.to_hex (Digest.string (data_to_string e1)))) in
+          let () = prerr_endline (Printf.sprintf "MD5 - e2: %s" (Digest.to_hex (Digest.string (data_to_string e2)))) in
           let () = prerr_endline (Printf.sprintf "Type - e1:\n%s" (Mp_data.type_to_string e1)) in
           let () = prerr_endline (Printf.sprintf "Type - e2:\n%s" (Mp_data.type_to_string e2)) in
-          let () = prerr_endline (Printf.sprintf "Value - e1:\n%s\nLength - e1: %u" (Mp_data.to_string e1) (String.length (Mp_data.to_string e1))) in
-          let () = prerr_endline (Printf.sprintf "Value - e2:\n%s\nLength - e2: %u" (Mp_data.to_string e2) (String.length (Mp_data.to_string e2))) in
+          let () = prerr_endline (Printf.sprintf "Value - e1:\n%s\nLength - e1: %u" (data_to_string e1) (String.length (data_to_string e1))) in
+          let () = prerr_endline (Printf.sprintf "Value - e2:\n%s\nLength - e2: %u" (data_to_string e2) (String.length (data_to_string e2))) in
           let () = flush stderr in
           ()
         )
@@ -459,8 +465,8 @@ let data_equals d1 d2 =
       | _ -> (
           if (not comparison) then (
             let () = prerr_endline (Printf.sprintf "Failure in data comparison \n") in
-            let () = prerr_endline (Printf.sprintf "Value e1: \n%s\nValue e2:\n%s\n" (Mp_data.to_string e1) (Mp_data.to_string e2) ) in
-            let () = prerr_endline (Printf.sprintf "Length e1: %u  Length e2: %u\n" (String.length (Mp_data.to_string e1)) (String.length (Mp_data.to_string e2)) ) in
+            let () = prerr_endline (Printf.sprintf "Value e1: \n%s\nValue e2:\n%s\n" (data_to_string e1) (data_to_string e2) ) in
+            let () = prerr_endline (Printf.sprintf "Length e1: %u  Length e2: %u\n" (String.length (data_to_string e1)) (String.length (data_to_string e2)) ) in
             let () = prerr_endline (Printf.sprintf "Type e1: %s  Type e2: %s\n" (Mp_data.type_to_string e1) (Mp_data.type_to_string e2) ) in
             let () = flush stderr in
             ()
@@ -734,7 +740,7 @@ let test_filter_iter connection records ok_value_iter =
     let iter acc fields row = 
       let d = List.nth row (List.assoc "f_date_null_no_def" fields) in
       let s = List.nth row (List.assoc "f_varstring_null_no_def" fields) in
-      acc := (Mp_data.to_string d) ^ (Mp_data.to_string s) 
+      acc := (data_to_string d) ^ (data_to_string s)
     in
     let () = Mp_client.(
       assert_equal ~msg:sql 

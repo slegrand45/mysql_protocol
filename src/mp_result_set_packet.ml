@@ -16,7 +16,11 @@ let rows_to_string result_select =
   let count_records = ref 1 in
   let count_fields = ref 0 in
   let row acc v = 
-    let s = Mp_data.to_string v in
+    let s =
+      match (Mp_data.to_string v) with
+      | None -> "NULL"
+      | Some x -> x
+    in
     let (f, _) = List.nth field_names !count_fields in
     let () = incr count_fields in
     let s = f ^ ": " ^ s ^ "\n" in

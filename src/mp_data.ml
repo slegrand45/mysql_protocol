@@ -114,70 +114,70 @@ let type_to_string = function
   | Geometry _ -> "Geometry"
 
 let to_string = function
-  | Null -> "NULL"
-  | Tinyint v -> string_of_int v
-  | Smallint v -> string_of_int v
-  | Int v -> string_of_int v
-  | Int24 v -> string_of_int v
-  | Year v -> string_of_int v
-  | Longint v -> Int64.to_string v
-  | Longlongint v -> Big_int.string_of_big_int v
-  | Decimal v -> Num.string_of_num v
-  | Date v -> (
+  | Null -> None
+  | Tinyint v -> Some(string_of_int v)
+  | Smallint v -> Some(string_of_int v)
+  | Int v -> Some(string_of_int v)
+  | Int24 v -> Some(string_of_int v)
+  | Year v -> Some(string_of_int v)
+  | Longint v -> Some(Int64.to_string v)
+  | Longlongint v -> Some(Big_int.string_of_big_int v)
+  | Decimal v -> Some(Num.string_of_num v)
+  | Date v -> Some(
       let (year, month, day) = v in
       Printf.sprintf "%u-%u-%u" year month day
     )
-  | Time v -> (
+  | Time v -> Some(
       let (sign, hour, min, sec, subsec) = v in
       Printf.sprintf "%s%u:%u:%u.%Lu" (sign_to_string sign) hour min sec subsec
     )
-  | Datetime v -> (
+  | Datetime v -> Some(
       let ((year, month, day), (hour, min, sec, subsec)) = v in
       Printf.sprintf "%u-%u-%u %u:%u:%u.%Lu" year month day hour min sec subsec
     )
-  | Timestamp v -> (
+  | Timestamp v -> Some(
       let ((year, month, day), (hour, min, sec, subsec)) = v in
       Printf.sprintf "%u-%u-%u %u:%u:%u.%Lu" year month day hour min sec subsec
     )
-  | Float v -> string_of_float v
-  | Double v -> string_of_float v
-  | Varchar v -> v
-  | String v -> v
-  | Varstring v -> v
-  | Enum v -> v
-  | Set v -> v
-  | Blob v -> Buffer.contents v
-  | Binary v -> Buffer.contents v
-  | Varbinary v -> Buffer.contents v
-  | Bit v -> (
+  | Float v -> Some(string_of_float v)
+  | Double v -> Some(string_of_float v)
+  | Varchar v -> Some v
+  | String v -> Some v
+  | Varstring v -> Some v
+  | Enum v -> Some v
+  | Set v -> Some v
+  | Blob v -> Some(Buffer.contents v)
+  | Binary v -> Some(Buffer.contents v)
+  | Varbinary v -> Some(Buffer.contents v)
+  | Bit v -> Some(
       bitmatch v with
-| { b1  : 1; b2  : 1; b3  : 1; b4  : 1; b5  : 1; b6  : 1; b7  : 1; b8  : 1;
-    b9  : 1; b10 : 1; b11 : 1; b12 : 1; b13 : 1; b14 : 1; b15 : 1; b16 : 1;
-    b17 : 1; b18 : 1; b19 : 1; b20 : 1; b21 : 1; b22 : 1; b23 : 1; b24 : 1;
-    b25 : 1; b26 : 1; b27 : 1; b28 : 1; b29 : 1; b30 : 1; b31 : 1; b32 : 1;
-    b33 : 1; b34 : 1; b35 : 1; b36 : 1; b37 : 1; b38 : 1; b39 : 1; b40 : 1;
-    b41 : 1; b42 : 1; b43 : 1; b44 : 1; b45 : 1; b46 : 1; b47 : 1; b48 : 1;
-    b49 : 1; b50 : 1; b51 : 1; b52 : 1; b53 : 1; b54 : 1; b55 : 1; b56 : 1;
-    b57 : 1; b58 : 1; b59 : 1; b60 : 1; b61 : 1; b62 : 1; b63 : 1; b64 : 1 } ->
-  (
-    let f b =
-      match b with
-      | true -> "1"
-      | false -> "0"
-    in
-    Printf.sprintf "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s"
-      (f b1)  (f b2)  (f b3)  (f b4)  (f b5)  (f b6)  (f b7)  (f b8)
-      (f b9)  (f b10) (f b11) (f b12) (f b13) (f b14) (f b15) (f b16)
-      (f b17) (f b18) (f b19) (f b20) (f b21) (f b22) (f b23) (f b24)
-      (f b25) (f b26) (f b27) (f b28) (f b29) (f b30) (f b31) (f b32)
-      (f b33) (f b34) (f b35) (f b36) (f b37) (f b38) (f b39) (f b40)
-      (f b41) (f b42) (f b43) (f b44) (f b45) (f b46) (f b47) (f b48)
-      (f b49) (f b50) (f b51) (f b52) (f b53) (f b54) (f b55) (f b56)
-      (f b57) (f b58) (f b59) (f b60) (f b61) (f b62) (f b63) (f b64)
-  )
-| { _ } -> assert false
-)
-| Geometry v -> Bitstring.string_of_bitstring v
+      | { b1  : 1; b2  : 1; b3  : 1; b4  : 1; b5  : 1; b6  : 1; b7  : 1; b8  : 1;
+          b9  : 1; b10 : 1; b11 : 1; b12 : 1; b13 : 1; b14 : 1; b15 : 1; b16 : 1;
+          b17 : 1; b18 : 1; b19 : 1; b20 : 1; b21 : 1; b22 : 1; b23 : 1; b24 : 1;
+          b25 : 1; b26 : 1; b27 : 1; b28 : 1; b29 : 1; b30 : 1; b31 : 1; b32 : 1;
+          b33 : 1; b34 : 1; b35 : 1; b36 : 1; b37 : 1; b38 : 1; b39 : 1; b40 : 1;
+          b41 : 1; b42 : 1; b43 : 1; b44 : 1; b45 : 1; b46 : 1; b47 : 1; b48 : 1;
+          b49 : 1; b50 : 1; b51 : 1; b52 : 1; b53 : 1; b54 : 1; b55 : 1; b56 : 1;
+          b57 : 1; b58 : 1; b59 : 1; b60 : 1; b61 : 1; b62 : 1; b63 : 1; b64 : 1 } ->
+          (
+            let f b =
+              match b with
+              | true -> "1"
+              | false -> "0"
+            in
+            Printf.sprintf "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s"
+              (f b1)  (f b2)  (f b3)  (f b4)  (f b5)  (f b6)  (f b7)  (f b8)
+              (f b9)  (f b10) (f b11) (f b12) (f b13) (f b14) (f b15) (f b16)
+              (f b17) (f b18) (f b19) (f b20) (f b21) (f b22) (f b23) (f b24)
+              (f b25) (f b26) (f b27) (f b28) (f b29) (f b30) (f b31) (f b32)
+              (f b33) (f b34) (f b35) (f b36) (f b37) (f b38) (f b39) (f b40)
+              (f b41) (f b42) (f b43) (f b44) (f b45) (f b46) (f b47) (f b48)
+              (f b49) (f b50) (f b51) (f b52) (f b53) (f b54) (f b55) (f b56)
+              (f b57) (f b58) (f b59) (f b60) (f b61) (f b62) (f b63) (f b64)
+          )
+      | { _ } -> assert false
+    )
+  | Geometry v -> Some(Bitstring.string_of_bitstring v)
 
 let to_ocaml_int v =
   let ex = Wrong_type "Unable to convert to int" in

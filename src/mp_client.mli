@@ -82,11 +82,12 @@ type connection = {
    insert_id can be negative in two cases:
    - the auto_increment value is indeed negative (SIGNED field).
    - the returned value overflows Int64 maximum (BIGINT UNSIGNED field).
+
    Unfortunately, the protocol gives no way to differentiate these two
-   cases (see https://bugs.mysql.com/bug.php?id=69228).
+   cases (see {{:https://bugs.mysql.com/bug.php?id=69228} this bug report}).
    So we return two values:
    - the first one is a Int64 and must be used when the
-     auto_increment is _not_ a BIGINT UNSIGNED field.
+     auto_increment is {b _not_} a BIGINT UNSIGNED field.
    - the second one is a Big_int and must be used when the
      auto_increment is a BIGINT UNSIGNED field.
 *)
@@ -102,7 +103,7 @@ type dml_dcl_result = {
    Result for a prepare command.
 *)
 type prepare_result = {
-  prepare_handler : Int64.t; (** id *)
+  prepare_handler : Int64.t;
   prepare_nb_columns : int;
   prepare_nb_parameters : int;
   prepare_warning_count : int;

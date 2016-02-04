@@ -291,12 +291,14 @@ DML (Data Manipulation Language) and DCL (Data Control Language) result.
 
    insert_id can be negative in two cases:<ul>
 <li>the auto_increment value is indeed negative (SIGNED field).</li>
-<li>the returned value overflows Int64 maximum (BIGINT UNSIGNED field).
+<li>the returned value overflows Int64 maximum (BIGINT UNSIGNED field).</li>
+</ul>
+
    Unfortunately, the protocol gives no way to differentiate these two
-   cases (see https://bugs.mysql.com/bug.php?id=69228).
-   So we return two values:</li>
+   cases (see <a href="https://bugs.mysql.com/bug.php?id=69228"> this bug report</a>).
+   So we return two values:<ul>
 <li>the first one is a Int64 and must be used when the
-     auto_increment is _not_ a BIGINT UNSIGNED field.</li>
+     auto_increment is <b>_not_</b> a BIGINT UNSIGNED field.</li>
 <li>the second one is a Big_int and must be used when the
      auto_increment is a BIGINT UNSIGNED field.</li>
 </ul>
@@ -310,10 +312,7 @@ DML (Data Manipulation Language) and DCL (Data Control Language) result.
 <code>&nbsp;&nbsp;</code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTprepare_result.prepare_handler">prepare_handler</span>&nbsp;: <code class="type">Int64.t</code>;</code></td>
-<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-id<br>
-</div>
-</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+
 </tr>
 <tr>
 <td align="left" valign="top" >

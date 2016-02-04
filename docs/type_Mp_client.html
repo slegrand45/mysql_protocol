@@ -35,7 +35,7 @@
 &nbsp;&nbsp;}<br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;dml_dcl_result&nbsp;=&nbsp;{<br>
 &nbsp;&nbsp;&nbsp;&nbsp;affected_rows&nbsp;:&nbsp;<span class="constructor">Int64</span>.t;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;insert_id&nbsp;:&nbsp;<span class="constructor">Int64</span>.t;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;insert_id&nbsp;:&nbsp;<span class="constructor">Int64</span>.t&nbsp;*&nbsp;<span class="constructor">Big_int</span>.big_int;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;server_status&nbsp;:&nbsp;int;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;warning_count&nbsp;:&nbsp;int;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;:&nbsp;string;<br>

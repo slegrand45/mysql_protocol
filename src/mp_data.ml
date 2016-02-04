@@ -179,8 +179,25 @@ let to_string = function
     )
   | Geometry v -> Some(Bitstring.string_of_bitstring v)
 
+let raise_wrong_type v t =
+  let s =
+    match to_string v with
+    | None -> "NULL"
+    | Some x -> x
+  in
+  let s =
+    if String.length s > 32 then
+      (String.sub s 0 32) ^ "..."
+    else s
+  in
+  let msg =
+    Printf.sprintf "Unable to convert to %s, value \"%s\"is of type %s"
+    t s (type_to_string v)
+  in
+  raise (Wrong_type msg)
+
 let to_ocaml_int v =
-  let ex = Wrong_type "Unable to convert to int" in
+  let t = "int" in
   match v with
   | Null -> None
   | Tinyint v -> Some v
@@ -188,231 +205,231 @@ let to_ocaml_int v =
   | Int v -> Some v
   | Int24 v -> Some v
   | Year v -> Some v
-  | Longint _ -> raise ex
-  | Longlongint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Date _ -> raise ex
-  | Time _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Longint _ -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_int64 v =
-  let ex = Wrong_type "Unable to convert to Int64" in
+  let t = "Int64" in
   match v with
   | Null -> None
   | Longint v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _  -> raise ex
-  | Longlongint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Date _ -> raise ex
-  | Time _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _  -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_big_int v =
-  let ex = Wrong_type "Unable to convert to Big_int" in
+  let t = "Big_int" in
   match v with
   | Null -> None
   | Longlongint v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _ -> raise ex
-  | Longint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Date _ -> raise ex
-  | Time _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _ -> raise_wrong_type v t
+  | Longint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_num v =
-  let ex = Wrong_type "Unable to convert to Num" in
+  let t = "Num" in
   match v with
   | Null -> None
   | Decimal v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _ -> raise ex
-  | Longint _ -> raise ex
-  | Longlongint _ -> raise ex
-  | Date _ -> raise ex
-  | Time _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _ -> raise_wrong_type v t
+  | Longint _ -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_date v =
-  let ex = Wrong_type "Unable to convert to date" in
+  let t = "date" in
   match v with
   | Null -> None
   | Date v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _ -> raise ex
-  | Longint _ -> raise ex
-  | Longlongint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Time _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _ -> raise_wrong_type v t
+  | Longint _ -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_time v =
-  let ex = Wrong_type "Unable to convert to time" in
+  let t = "time" in
   match v with
   | Null -> None
   | Time v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _ -> raise ex
-  | Longint _ -> raise ex
-  | Longlongint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Date _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _ -> raise_wrong_type v t
+  | Longint _ -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_dt_ts v =
-  let ex = Wrong_type "Unable to convert to datetime/timestamp" in
+  let t = "datetime/timestamp" in
   match v with
   | Null -> None
   | Datetime v -> Some v
   | Timestamp v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _ -> raise ex
-  | Longint _ -> raise ex
-  | Longlongint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Date _ -> raise ex
-  | Time _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _ -> raise_wrong_type v t
+  | Longint _ -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_float v =
-  let ex = Wrong_type "Unable to convert to float" in
+  let t = "float" in
   match v with
   | Null -> None
   | Float v -> Some v
   | Double v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _ -> raise ex
-  | Longint _ -> raise ex
-  | Longlongint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Date _ -> raise ex
-  | Time _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _ -> raise_wrong_type v t
+  | Longint _ -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_string v =
-  let ex = Wrong_type "Unable to convert to string" in
+  let t = "string" in
   match v with
   | Null -> None
   | Varchar v -> Some v
@@ -420,83 +437,83 @@ let to_ocaml_string v =
   | Varstring v -> Some v
   | Enum v -> Some v
   | Set v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _ -> raise ex
-  | Longint _ -> raise ex
-  | Longlongint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Date _ -> raise ex
-  | Time _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _ -> raise_wrong_type v t
+  | Longint _ -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_buffer v =
-  let ex = Wrong_type "Unable to convert to Buffer" in
+  let t = "Buffer" in
   match v with
   | Null -> None
   | Blob v -> Some v
   | Binary v -> Some v
   | Varbinary v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _ -> raise ex
-  | Longint _ -> raise ex
-  | Longlongint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Date _ -> raise ex
-  | Time _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Bit _ -> raise ex
-  | Geometry _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _ -> raise_wrong_type v t
+  | Longint _ -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Bit _ -> raise_wrong_type v t
+  | Geometry _ -> raise_wrong_type v t
 
 let to_ocaml_bitstring v =
-  let ex = Wrong_type "Unable to convert to Bitstring" in
+  let t = "Bitstring" in
   match v with
   | Null -> None
   | Bit v -> Some v
   | Geometry v -> Some v
-  | Tinyint _ -> raise ex
-  | Smallint _ -> raise ex
-  | Int _ -> raise ex
-  | Int24 _ -> raise ex
-  | Year _ -> raise ex
-  | Longint _ -> raise ex
-  | Longlongint _ -> raise ex
-  | Decimal _ -> raise ex
-  | Date _ -> raise ex
-  | Time _ -> raise ex
-  | Datetime _ -> raise ex
-  | Timestamp _ -> raise ex
-  | Float _ -> raise ex
-  | Double _ -> raise ex
-  | Varchar _ -> raise ex
-  | String _ -> raise ex
-  | Varstring _ -> raise ex
-  | Enum _ -> raise ex
-  | Set _ -> raise ex
-  | Blob _ -> raise ex
-  | Binary _ -> raise ex
-  | Varbinary _ -> raise ex
+  | Tinyint _ -> raise_wrong_type v t
+  | Smallint _ -> raise_wrong_type v t
+  | Int _ -> raise_wrong_type v t
+  | Int24 _ -> raise_wrong_type v t
+  | Year _ -> raise_wrong_type v t
+  | Longint _ -> raise_wrong_type v t
+  | Longlongint _ -> raise_wrong_type v t
+  | Decimal _ -> raise_wrong_type v t
+  | Date _ -> raise_wrong_type v t
+  | Time _ -> raise_wrong_type v t
+  | Datetime _ -> raise_wrong_type v t
+  | Timestamp _ -> raise_wrong_type v t
+  | Float _ -> raise_wrong_type v t
+  | Double _ -> raise_wrong_type v t
+  | Varchar _ -> raise_wrong_type v t
+  | String _ -> raise_wrong_type v t
+  | Varstring _ -> raise_wrong_type v t
+  | Enum _ -> raise_wrong_type v t
+  | Set _ -> raise_wrong_type v t
+  | Blob _ -> raise_wrong_type v t
+  | Binary _ -> raise_wrong_type v t
+  | Varbinary _ -> raise_wrong_type v t
 
 let eq : t -> t -> bool = fun d1 d2 ->
   match d1, d2 with

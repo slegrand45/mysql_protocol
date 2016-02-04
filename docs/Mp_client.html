@@ -246,7 +246,7 @@ number of affected rows<br>
 <td align="left" valign="top" >
 <code>&nbsp;&nbsp;</code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTdml_dcl_result.insert_id">insert_id</span>&nbsp;: <code class="type">Int64.t</code>;</code></td>
+<code><span id="TYPEELTdml_dcl_result.insert_id">insert_id</span>&nbsp;: <code class="type">Int64.t * Big_int.big_int</code>;</code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 auto_increment id after an INSERT statement<br>
 </div>
@@ -286,7 +286,21 @@ warning message<br>
 
 <div class="info ">
 DML (Data Manipulation Language) and DCL (Data Control Language) result.
-   Result of INSERT, UPDATE, GRANT... statements.<br>
+   Result of INSERT, UPDATE, GRANT... statements.
+<p>
+
+   insert_id can be negative in two cases:<ul>
+<li>the auto_increment value is indeed negative (SIGNED field).</li>
+<li>the returned value overflows Int64 maximum (BIGINT UNSIGNED field).
+   Unfortunately, the protocol gives no way to differentiate these two
+   cases (see https://bugs.mysql.com/bug.php?id=69228).
+   So we return two values:</li>
+<li>the first one is a Int64 and must be used when the
+     auto_increment is _not_ a BIGINT UNSIGNED field.</li>
+<li>the second one is a Big_int and must be used when the
+     auto_increment is a BIGINT UNSIGNED field.</li>
+</ul>
+<br>
 </div>
 
 

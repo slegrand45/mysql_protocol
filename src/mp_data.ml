@@ -180,6 +180,34 @@ let to_string = function
   | Geometry v -> Some(Bitstring.string_of_bitstring v)
 
 let raise_wrong_type v t =
+  let advice =
+    match v with
+    | Null -> ""
+    | Tinyint _ -> "to_ocaml_int"
+    | Smallint _ -> "to_ocaml_int"
+    | Int _ -> "to_ocaml_int"
+    | Int24 _ -> "to_ocaml_int"
+    | Year _ -> "to_ocaml_int"
+    | Longint _ -> "to_ocaml_int64"
+    | Longlongint _ -> "to_ocaml_big_int"
+    | Decimal _ -> "to_ocaml_num"
+    | Date _ -> "to_ocaml_date"
+    | Time _ -> "to_ocaml_time"
+    | Datetime _ -> "to_ocaml_dt_ts"
+    | Timestamp _ -> "to_ocaml_dt_ts"
+    | Float _ -> "to_ocaml_float"
+    | Double _ -> "to_ocaml_float"
+    | Varchar _ -> "to_ocaml_string"
+    | String _ -> "to_ocaml_string"
+    | Varstring _ -> "to_ocaml_string"
+    | Enum _ -> "to_ocaml_string"
+    | Set _ -> "to_ocaml_string"
+    | Blob _ -> "to_ocaml_buffer"
+    | Binary _ -> "to_ocaml_buffer"
+    | Varbinary _ -> "to_ocaml_buffer"
+    | Bit _ -> "to_ocaml_bitstring"
+    | Geometry _ -> "to_ocaml_bitstring"
+  in
   let s =
     match to_string v with
     | None -> "NULL"
@@ -191,8 +219,12 @@ let raise_wrong_type v t =
     else s
   in
   let msg =
-    Printf.sprintf "Unable to convert to %s, value \"%s\"is of type %s"
-    t s (type_to_string v)
+    let advice =
+      if advice = "" then ""
+      else Printf.sprintf " May be you should use the \"%s\" function." advice
+    in
+    Printf.sprintf "Unable to convert to %s, value \"%s\" is of type %s.%s"
+    t s (type_to_string v) advice
   in
   raise (Wrong_type msg)
 

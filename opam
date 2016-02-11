@@ -14,7 +14,7 @@ install: [make "install"]
 remove: [make "deinstall"]
 depends: [
   "ocamlbuild" {build}
-  "ocamlfind"
+  "ocamlfind" {build}
   "cryptokit"
   "bitstring"
 ]

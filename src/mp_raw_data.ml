@@ -11,9 +11,7 @@ let row_data_to_string p =
     | Row_data_null -> "NULL"
     | Row_data_binary b -> Bitstring.string_of_bitstring b
   in
-  let s = "" in
-  let s = s ^ (Printf.sprintf "row_data : %s\n" v) in
-  s
+  Printf.sprintf "row_data : %s\n" v
 
 let binary data field_packet = 
   let field_type = field_packet.Mp_field_packet.field_type in

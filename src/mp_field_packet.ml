@@ -119,21 +119,33 @@ let field_packet_to_string p =
     in
     List.fold_left f "" p.field_flags
   in
-  let s = "" in
-  let s = s ^ (Printf.sprintf "field_catalog : %s\n" p.field_catalog) in
-  let s = s ^ (Printf.sprintf "field_db : %s\n" p.field_db) in
-  let s = s ^ (Printf.sprintf "field_table : %s\n" p.field_table) in
-  let s = s ^ (Printf.sprintf "field_org_table : %s\n" p.field_org_table) in
-  let s = s ^ (Printf.sprintf "field_name : %s\n" p.field_name) in
-  let s = s ^ (Printf.sprintf "field_org_name : %s\n" p.field_org_name) in
-  let s = s ^ (Printf.sprintf "field_charset_number : %u\n" p.field_charset_number) in
-  let s = s ^ (Printf.sprintf "field_length : %Lu\n" p.field_length) in
-  let s = s ^ (Printf.sprintf "field_type : %s\n" field_type) in
-  let s = s ^ (Printf.sprintf "field_flags : %s\n" field_flags) in
-  let s = s ^ (Printf.sprintf "field_decimals : %u\n" p.field_decimals) in
-  let s = s ^ (Printf.sprintf "field_default : %Lu\n" p.field_default) in
-  let s = s ^ (Printf.sprintf "version : %s\n" version) in
-  s
+  let fmt = format_of_string "field_catalog : %s\n"
+    ^^ format_of_string "field_db : %s\n"
+    ^^ format_of_string "field_table : %s\n"
+    ^^ format_of_string "field_org_table : %s\n"
+    ^^ format_of_string "field_name : %s\n"
+    ^^ format_of_string "field_org_name : %s\n"
+    ^^ format_of_string "field_charset_number : %u\n"
+    ^^ format_of_string "field_length : %Lu\n"
+    ^^ format_of_string "field_type : %s\n"
+    ^^ format_of_string "field_flags : %s\n"
+    ^^ format_of_string "field_decimals : %u\n"
+    ^^ format_of_string "field_default : %Lu\n"
+    ^^ format_of_string "version : %s\n"
+  in
+  Printf.sprintf fmt p.field_catalog
+    p.field_db
+    p.field_table
+    p.field_org_table
+    p.field_name
+    p.field_org_name
+    p.field_charset_number
+    p.field_length
+    field_type
+    field_flags
+    p.field_decimals
+    p.field_default
+    version
 
 let decode_field_packet_field_type field_type = 
   match field_type with

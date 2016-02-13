@@ -11,12 +11,9 @@ let eof_packet_empty = {
   eof_status_flags = 0
 }
 
-let eof_packet_to_string p = 
-  let s = "" in
-  let s = s ^ (Printf.sprintf "eof_field_count : %u\n" p.eof_field_count) in
-  let s = s ^ (Printf.sprintf "eof_warning_count : %u\n" p.eof_warning_count) in
-  let s = s ^ (Printf.sprintf "eof_status_flags : %u\n" p.eof_status_flags) in
-  s
+let eof_packet_to_string p =
+  Printf.sprintf "eof_field_count : %u\neof_warning_count : %u\neof_status_flags : %u\n"
+    p.eof_field_count p.eof_warning_count p.eof_status_flags
 
 type flag_server = 
     Server_status_in_trans

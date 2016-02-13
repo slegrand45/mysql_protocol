@@ -5,12 +5,9 @@ type error_packet = {
   error_message : string;
 }
 
-let error_packet_to_string p = 
-  let s = "" in
-  let s = s ^ (Printf.sprintf "error_errno : %u\n" p.error_errno) in
-  let s = s ^ (Printf.sprintf "error_sqlstate : %s\n" p.error_sqlstate) in
-  let s = s ^ (Printf.sprintf "error_message : %s\n" p.error_message) in
-  s
+let error_packet_to_string p =
+  Printf.sprintf "error_errno : %u\nerror_sqlstate : %s\nerror_message : %s\n"
+    p.error_errno p.error_sqlstate p.error_message
 
 let error_packet bits = 
   bitmatch bits with

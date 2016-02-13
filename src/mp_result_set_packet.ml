@@ -51,12 +51,15 @@ let result_set_packet_to_string p =
     in
     List.fold_left f "" p.result_set_row_data_packets
   in
-  let s = "" in
-  let s = s ^ (Printf.sprintf "result_set_field_count : %Lu\n" p.result_set_field_count) in
-  let s = s ^ (Printf.sprintf "result_set_extra : %Lu\n" p.result_set_extra) in
-  let s = s ^ (Printf.sprintf "result_set_field_packets : \n%s\n" field_packets) in
-  let s = s ^ (Printf.sprintf "result_set_row_data_packets : \n%s\n" row_data_packets) in
-  s
+  let fmt = format_of_string "result_set_field_count : %Lu\n"
+    ^^ format_of_string "result_set_extra : %Lu\n"
+    ^^ format_of_string "result_set_field_packets : \n%s\n"
+    ^^ format_of_string "result_set_row_data_packets : \n%s\n"
+  in
+  Printf.sprintf fmt p.result_set_field_count
+    p.result_set_extra
+    field_packets
+    row_data_packets
 
 let result_select_to_string result_select =  
   let s1 = rows_to_string result_select.rows in

@@ -9,15 +9,17 @@ type ok_packet = {
 
 let ok_packet_to_string p =
   let (insert_id_int64, insert_id_big_int) = p.ok_insert_id in
-  let s = "" in
-  let s = s ^ (Printf.sprintf "ok_affected_rows : %Lu\n" p.ok_affected_rows) in
-  let s = s ^ (Printf.sprintf "ok_insert_id : (%Lu, %s)\n"
-    insert_id_int64 (Big_int.string_of_big_int insert_id_big_int))
+  let fmt = format_of_string "ok_affected_rows : %Lu\n"
+    ^^ format_of_string "ok_insert_id : (%Lu, %s)\n"
+    ^^ format_of_string "ok_server_status : %u\n"
+    ^^ format_of_string "ok_warning_count : %u\n"
+    ^^ format_of_string "ok_message : %s\n"
   in
-  let s = s ^ (Printf.sprintf "ok_server_status : %u\n" p.ok_server_status) in
-  let s = s ^ (Printf.sprintf "ok_warning_count : %u\n" p.ok_warning_count) in
-  let s = s ^ (Printf.sprintf "ok_message : %s\n" p.ok_message) in
-  s
+  Printf.sprintf fmt p.ok_affected_rows
+    insert_id_int64 (Big_int.string_of_big_int insert_id_big_int)
+    p.ok_server_status
+    p.ok_warning_count
+    p.ok_message
 
 let ok_packet bits = 
   let (affected_rows, rest) = Mp_binary.length_coded_binary bits in

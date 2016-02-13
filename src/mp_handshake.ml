@@ -13,20 +13,30 @@ type handshake = {
   scramble_buff_2 : Bitstring.t
 }
 
-let handshake_to_string handshake = 
-  let s = "" in
-  let s = s ^ (Printf.sprintf "packet_length : %u\n" handshake.packet_length) in
-  let s = s ^ (Printf.sprintf "packet_number : %u\n" handshake.packet_number) in
-  let s = s ^ (Printf.sprintf "protocol_version : %u\n" handshake.protocol_version) in
-  let s = s ^ (Printf.sprintf "server_version : %s\n" handshake.server_version) in
-  let s = s ^ (Printf.sprintf "thread_id : %Lu\n" handshake.thread_id) in
-  let s = s ^ (Printf.sprintf "scramble_buff_1 : %s\n" (Bitstring.string_of_bitstring handshake.scramble_buff_1)) in
-  let s = s ^ (Printf.sprintf "server_capabilities : %s\n" (Mp_capabilities.capabilities_to_string handshake.server_capabilities)) in
-  let s = s ^ (Printf.sprintf "server_language : %s\n" (Mp_charset.charset_to_string handshake.server_language)) in
-  let s = s ^ (Printf.sprintf "server_status : %u\n" handshake.server_status) in
-  let s = s ^ (Printf.sprintf "length_scramble : %u\n" handshake.length_scramble) in
-  let s = s ^ (Printf.sprintf "scramble_buff_2 : %s\n" (Bitstring.string_of_bitstring handshake.scramble_buff_2)) in
-  s
+let handshake_to_string handshake =
+  let fmt = format_of_string "packet_length : %u\n"
+    ^^ format_of_string "packet_number : %u\n"
+    ^^ format_of_string "protocol_version : %u\n"
+    ^^ format_of_string "server_version : %s\n"
+    ^^ format_of_string "thread_id : %Lu\n"
+    ^^ format_of_string "scramble_buff_1 : %s\n"
+    ^^ format_of_string "server_capabilities : %s\n"
+    ^^ format_of_string "server_language : %s\n"
+    ^^ format_of_string "server_status : %u\n"
+    ^^ format_of_string "length_scramble : %u\n"
+    ^^ format_of_string "scramble_buff_2 : %s\n"
+  in
+  Printf.sprintf fmt handshake.packet_length
+    handshake.packet_number
+    handshake.protocol_version
+    handshake.server_version
+    handshake.thread_id
+    (Bitstring.string_of_bitstring handshake.scramble_buff_1)
+    (Mp_capabilities.capabilities_to_string handshake.server_capabilities)
+    (Mp_charset.charset_to_string handshake.server_language)
+    handshake.server_status
+    handshake.length_scramble
+    (Bitstring.string_of_bitstring handshake.scramble_buff_2)
 
 let handshake_initialisation ic oc =
   let (packet_length, packet_number, bits) = Mp_packet.extract_packet ic oc in

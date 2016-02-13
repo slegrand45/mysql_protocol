@@ -10,29 +10,32 @@ type ok_prepare_packet = {
   ok_prepare_columns_names : Mp_field.field_name list;
 }
 
-let ok_prepare_packet_to_string p = 
-  let s = "" in
-  let s = s ^ (Printf.sprintf "ok_prepare_handler : %Lu\n" p.ok_prepare_handler) in
-  let s = s ^ (Printf.sprintf "ok_prepare_nb_columns : %u\n" p.ok_prepare_nb_columns) in
-  let s = s ^ (Printf.sprintf "ok_prepare_nb_parameters : %u\n" p.ok_prepare_nb_parameters) in
-  let s = s ^ (Printf.sprintf "ok_prepare_warning_count : %u\n" p.ok_prepare_warning_count) in
+let ok_prepare_packet_to_string p =
   let f_packet acc p = 
     acc ^ "\n" ^ (Mp_field_packet.field_packet_to_string p)
   in
   let f_name acc e = 
     acc ^ "\n" ^ (Mp_field.field_name_to_string e)
   in
-  let s = s ^ "PARAMETERS FIELDS: \n" in
-  let s = s ^ "\nFields: \n" in
-  let s = s ^ (List.fold_left f_packet "" p.ok_prepare_parameters_fields) in
-  let s = s ^ "\nNames: \n" in
-  let s = s ^ (List.fold_left f_name "" p.ok_prepare_parameters_names) in
-  let s = s ^ "\n\nCOLUMNS FIELDS: \n" in
-  let s = s ^ "\nFields: \n" in
-  let s = s ^ (List.fold_left f_packet "" p.ok_prepare_columns_fields) in
-  let s = s ^ "\nNames: \n" in
-  let s = s ^ (List.fold_left f_name "" p.ok_prepare_columns_names) in
-  s
+  let fmt = format_of_string "ok_prepare_handler : %Lu\n"
+    ^^ format_of_string "ok_prepare_nb_columns : %u\n"
+    ^^ format_of_string "ok_prepare_nb_parameters : %u\n"
+    ^^ format_of_string "ok_prepare_warning_count : %u\n"
+    ^^ format_of_string "PARAMETERS FIELDS: \n"
+    ^^ format_of_string "\nFields: \n%s"
+    ^^ format_of_string "\nNames: \n%s"
+    ^^ format_of_string "\n\nCOLUMNS FIELDS: \n"
+    ^^ format_of_string "\nFields: \n%s"
+    ^^ format_of_string "\nNames: \n%s"
+  in
+  Printf.sprintf fmt p.ok_prepare_handler
+    p.ok_prepare_nb_columns
+    p.ok_prepare_nb_parameters
+    p.ok_prepare_warning_count
+    (List.fold_left f_packet "" p.ok_prepare_parameters_fields)
+    (List.fold_left f_name "" p.ok_prepare_parameters_names)
+    (List.fold_left f_packet "" p.ok_prepare_columns_fields)
+    (List.fold_left f_name "" p.ok_prepare_columns_names)
 
 let ok_prepare_packet bits ic oc = 
   bitmatch bits with

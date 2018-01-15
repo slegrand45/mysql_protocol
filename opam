@@ -16,6 +16,6 @@ depends: [
   "ocamlbuild" {build}
   "ocamlfind" {build}
   "cryptokit"
-  "bitstring"
+  "bitstring" {< "3.0.0"}
 ]
 available: [ ocaml-version >= "4.02.0" ]

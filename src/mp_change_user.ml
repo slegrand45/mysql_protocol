@@ -19,14 +19,15 @@ let build_change_user ~handshake ~user ~password ~databasename ~charset_number ~
   in
   let length_credential = String.length credential in
   let db = Bitstring.bitstring_of_string (Mp_string.make_null_terminated_string databasename) in
+  let length_db = Bitstring.bitstring_length db in
   let plugin = Mp_string.make_null_terminated_string auth_plugin_name in
   let length_plugin = String.length plugin in
-  let bits = BITSTRING {
+  let%bitstring bits = {|
       user : length_user*8 : string;
       credential : length_credential*8 : string;
-      db : -1 : bitstring;
+      db : length_db : bitstring;
       charset_number : 2*8 : int, unsigned, bigendian;
       plugin : length_plugin*8 : string
-    } 
+    |} 
   in
   bits

@@ -44,10 +44,11 @@ let ok_packet bits =
       (insert_id, bi)
   in
   if (Bitstring.bitstring_length rest > 0) then (
-    bitmatch rest with
-    | { server_status : 2*8 : int, unsigned, bigendian;
+    let length_msg = (Bitstring.bitstring_length rest) - (4*8) in
+    match%bitstring rest with
+    | {| server_status : 2*8 : int, unsigned, bigendian;
         warning_count : 2*8 : int, unsigned, bigendian;
-        message : -1 : string } -> (
+        message : length_msg : string |} -> (
           {
             ok_affected_rows = affected_rows;
             ok_insert_id = (insert_id_int64, insert_id_big_int);

@@ -1,4 +1,6 @@
 
+exception Bad_EOF_packet of Bitstring.bitstring
+
 type eof_packet = {
   eof_field_count : int;
   eof_warning_count : int;
@@ -56,27 +58,27 @@ let eof_packet_bits bits =
     { eof_field_count = 0xfe; eof_warning_count = 0; eof_status_flags = 0 }
   else if (length = 8) then (
     (* we only have the first byte 0xfe *)
-    bitmatch bits with
-    | { 0xfe : 1*8 : int, unsigned, littleendian } ->
+    match%bitstring bits with
+    | {| 0xfe : 1*8 : int, unsigned, littleendian |} ->
         { eof_field_count = 0xfe; eof_warning_count = 0; eof_status_flags = 0 }
   )
   else if (length = 32) then (
     (* complete EOF packet but the first byte 0xfe has already been eat *)
-    bitmatch bits with
-    | { warning_count : 2*8 : int, unsigned, littleendian;
-        status_flags : 2*8 : int, unsigned, littleendian } ->
+    match%bitstring bits with
+    | {| warning_count : 2*8 : int, unsigned, littleendian;
+        status_flags : 2*8 : int, unsigned, littleendian |} ->
       { eof_field_count = 0xfe; eof_warning_count = warning_count; eof_status_flags = status_flags }
   )
   else if (length = 40) then (
     (* complete EOF packet including the first byte 0xfe *)
-    bitmatch bits with
-    | { 0xfe : 1*8 : int, unsigned, littleendian;
+    match%bitstring bits with
+    | {| 0xfe : 1*8 : int, unsigned, littleendian;
         warning_count : 2*8 : int, unsigned, littleendian;
-        status_flags : 2*8 : int, unsigned, littleendian } ->
+        status_flags : 2*8 : int, unsigned, littleendian |} ->
       { eof_field_count = 0xfe; eof_warning_count = warning_count; eof_status_flags = status_flags }
   )
   else (
-    failwith "Bad EOF packet"
+    raise (Bad_EOF_packet bits)
   )
 
 let eof_packet_chan ic oc =

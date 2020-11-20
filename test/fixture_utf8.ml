@@ -1,6 +1,8 @@
 
 (* THIS FILE MUST BE ENCODED IN UTF-8 *)
 
+open Mysql_protocol
+
 let db_name = "test_ocaml_ocmp_utf8"
 
 let insert_var_string = "insert varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 "
@@ -190,33 +192,50 @@ let records_manyblobs = [
 ]
 
 (* more tests for date/time/datetime/timestamp and subseconds *)
-let records_date version = 
-  if version >= 5611 then
-    [
-      [Mp_data.data_date (0, 0, 0);
-       Mp_data.data_time (Mp_data.Positive, 0, 0, 0, Int64.zero);
-       Mp_data.data_datetime ((0, 0, 0), (0, 0, 0, Int64.zero));
-       Mp_data.data_timestamp ((0, 0, 0), (0, 0, 0, Int64.zero));
-      ];
-      [Mp_data.data_date (1992, 12, 31);
-       Mp_data.data_time (Mp_data.Positive, 21, 19, 49, Int64.zero);
-       Mp_data.data_datetime ((1990, 11, 5), (13, 17, 5, Int64.zero)); (* 5 seconds if version >= 5611 *)
-       Mp_data.data_timestamp ((2000, 1, 1), (1, 1, 15, Int64.zero));
-      ];
-    ]
-  else
-    [
-      [Mp_data.data_date (0, 0, 0);
-       Mp_data.data_time (Mp_data.Positive, 0, 0, 0, Int64.zero);
-       Mp_data.data_datetime ((0, 0, 0), (0, 0, 0, Int64.zero));
-       Mp_data.data_timestamp ((0, 0, 0), (0, 0, 0, Int64.zero));
-      ];
-      [Mp_data.data_date (1992, 12, 31);
-       Mp_data.data_time (Mp_data.Positive, 21, 19, 49, Int64.zero);
-       Mp_data.data_datetime ((1990, 11, 5), (13, 17, 4, Int64.zero));
-       Mp_data.data_timestamp ((2000, 1, 1), (1, 1, 15, Int64.zero));
-      ];
-    ]
+let records_date vendor version =
+  match vendor with
+    | Test_types.MySQL -> (
+        if version >= 5611 then
+          [
+            [Mp_data.data_date (0, 0, 0);
+             Mp_data.data_time (Mp_data.Positive, 0, 0, 0, Int64.zero);
+             Mp_data.data_datetime ((0, 0, 0), (0, 0, 0, Int64.zero));
+             Mp_data.data_timestamp ((0, 0, 0), (0, 0, 0, Int64.zero));
+            ];
+            [Mp_data.data_date (1992, 12, 31);
+             Mp_data.data_time (Mp_data.Positive, 21, 19, 49, Int64.zero);
+             Mp_data.data_datetime ((1990, 11, 5), (13, 17, 5, Int64.zero)); (* 5 seconds if version >= 5611 *)
+             Mp_data.data_timestamp ((2000, 1, 1), (1, 1, 15, Int64.zero));
+            ];
+          ]
+        else
+          [
+            [Mp_data.data_date (0, 0, 0);
+             Mp_data.data_time (Mp_data.Positive, 0, 0, 0, Int64.zero);
+             Mp_data.data_datetime ((0, 0, 0), (0, 0, 0, Int64.zero));
+             Mp_data.data_timestamp ((0, 0, 0), (0, 0, 0, Int64.zero));
+            ];
+            [Mp_data.data_date (1992, 12, 31);
+             Mp_data.data_time (Mp_data.Positive, 21, 19, 49, Int64.zero);
+             Mp_data.data_datetime ((1990, 11, 5), (13, 17, 4, Int64.zero));
+             Mp_data.data_timestamp ((2000, 1, 1), (1, 1, 15, Int64.zero));
+            ];
+          ]
+      )
+    | Test_types.MariaDB -> (
+        [
+          [Mp_data.data_date (0, 0, 0);
+           Mp_data.data_time (Mp_data.Positive, 0, 0, 0, Int64.zero);
+           Mp_data.data_datetime ((0, 0, 0), (0, 0, 0, Int64.zero));
+           Mp_data.data_timestamp ((0, 0, 0), (0, 0, 0, Int64.zero));
+          ];
+          [Mp_data.data_date (1992, 12, 31);
+           Mp_data.data_time (Mp_data.Positive, 21, 19, 49, Int64.zero);
+           Mp_data.data_datetime ((1990, 11, 5), (13, 17, 4, Int64.zero));
+           Mp_data.data_timestamp ((2000, 1, 1), (1, 1, 15, Int64.zero));
+          ];
+        ]
+    )
 
 let latin1_to_ut8 latin1 = 
   let utf8 = ref "" in
@@ -254,23 +273,45 @@ let records_bigvarbinary = [
   [Mp_data.data_varbinary (Buffer.add_string bigvarbinarybuffer2 (Fixture_config.build_string 65532); bigvarbinarybuffer2);];
 ]
 
-let records_proc_one_result = [
-  [Mp_data.data_longlongint (Big_int.big_int_of_int 100);
-   Mp_data.data_varstring ("ABC");
-  ]
-]
+let records_proc_one_result vendor =
+  match vendor with
+  | Test_types.MySQL -> 
+    [
+      [Mp_data.data_longlongint (Big_int.big_int_of_int 100);
+        Mp_data.data_varstring ("ABC");
+      ]
+    ]
+  | Test_types.MariaDB ->
+    [
+      [Mp_data.data_longint (Int64.of_int 100);
+        Mp_data.data_varstring ("ABC");
+      ]
+    ]
 
-let records_proc_multiple_results = [
-  [Mp_data.data_longlongint (Big_int.big_int_of_int 1);
-   Mp_data.data_varstring ("A");
-  ];
-  [Mp_data.data_longlongint (Big_int.big_int_of_int 2);
-   Mp_data.data_varstring ("B");
-  ];
-  [Mp_data.data_longlongint (Big_int.big_int_of_int 3);
-   Mp_data.data_varstring ("C");
-  ]
-]
+let records_proc_multiple_results vendor =
+  match vendor with
+  | Test_types.MySQL ->  [
+      [Mp_data.data_longlongint (Big_int.big_int_of_int 1);
+       Mp_data.data_varstring ("A");
+      ];
+      [Mp_data.data_longlongint (Big_int.big_int_of_int 2);
+       Mp_data.data_varstring ("B");
+      ];
+      [Mp_data.data_longlongint (Big_int.big_int_of_int 3);
+       Mp_data.data_varstring ("C");
+      ]
+    ]
+  | Test_types.MariaDB ->  [
+      [Mp_data.data_longint (Int64.of_int 1);
+       Mp_data.data_varstring ("A");
+      ];
+      [Mp_data.data_longint (Int64.of_int 2);
+       Mp_data.data_varstring ("B");
+      ];
+      [Mp_data.data_longint (Int64.of_int 3);
+       Mp_data.data_varstring ("C");
+      ]
+    ]
 
 (* right value for the iter test *)
 let ok_value_iter = "2010-12-29" ^ "varstring : abcdefghijklmnopqrstuvwxyzéèçàù & - _  ) = $ % * ? . ; / ! < > 123456789 "

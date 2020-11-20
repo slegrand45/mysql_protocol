@@ -57,7 +57,7 @@ type execute_result =
   | Executed_prepared_statement of (string * prepare_result * result)
   | Executed_prepared_statement_with_cursor of (string * prepare_result)
 
-let create_statement_from_string s = 
+let create_statement_from_string s =
   Created_statement s
 
 let error_exception_to_string e = 
@@ -185,27 +185,88 @@ let get_ic_oc ~connection =
   | Some (i, o) -> (i,o)
   | None -> failwith "No communication channel"
 
-let reset_session ~connection = 
+let change_user ~connection ~user ~password ?(databasename = "") ?(charset) () =
   let (ic, oc) = get_ic_oc ~connection:connection in
   let configuration = connection.configuration in
   let handshake = 
     match connection.handshake with
-      None -> failwith "Unable to reset session (no handshake)"
+      None -> failwith "Unable to change user (no handshake)"
     | Some h -> h
+  in
+  let encoding_number = 
+    match charset with
+    | None -> Mp_charset.charset_number (Mp_charset.Utf8, Mp_charset.Utf8_general_ci)
+    | Some cn -> Mp_charset.charset_number cn
   in
   let auth_plugin_name = "" in (* TODO: add in configuration *)
   let bits = Mp_change_user.build_change_user ~handshake:handshake 
-      ~user:configuration.user ~password:configuration.password 
-      ~databasename:configuration.databasename ~charset_number:configuration.charset_number 
+      ~user:user ~password:password 
+      ~databasename:databasename ~charset_number:encoding_number 
       ~auth_plugin_name:auth_plugin_name in
   let change_user = Mp_com.com_change_user bits in
-  let result = send_packet ~packet:change_user ~ic:ic ~oc:oc ~sent:Mp_com.Change_user () in 
+  try
+    let result = send_packet ~packet:change_user ~ic:ic ~oc:oc ~sent:Mp_com.Change_user () in
+    match result with
+    | [] -> failwith "No result (change_user)"
+    | (result, _)::_ -> (
+        match result with
+        | Mp_result_packet.Result_packet_ok _ -> (
+            { configuration with 
+                charset_number = encoding_number;
+                user = user;
+                password = password;
+                databasename = databasename;
+            }
+          )
+        | _ -> failwith "Unable to change user (bad answer)"
+      )
+  with
+    | Mp_eof_packet.Bad_EOF_packet eof_packet -> (
+        let auth_switch_request = Mp_auth_switch_request.auth_switch_request_packet_bits_without_0xFE_prefix eof_packet in
+        let plugin_data = auth_switch_request.Mp_auth_switch_request.plugin_data in
+        let encrypted_pwd = Mp_authentication.encode_client_password
+          (Bitstring.string_of_bitstring plugin_data) password
+        in
+        (* /!\ : "1" in make_packet() because it's the second packet to send *)
+        let response_packet = Mp_packet.make_packet 1 (Bitstring.bitstring_of_string encrypted_pwd) in
+        let result = send_packet ~packet:response_packet ~ic ~oc
+          ~sent:Mp_com.Client_response_auth_switch_request_plugin_mysql_native_password ()
+        in
+        match result with
+        | [] -> failwith "No result (client_response_auth_switch_request_plugin_mysql_native_password)"
+        | (result, _)::_ -> (
+            match result with
+            | Mp_result_packet.Result_packet_ok _ -> (
+                { configuration with 
+                    charset_number = encoding_number;
+                    user = user;
+                    password = password;
+                    databasename = databasename;
+                }
+              )
+            | _ -> failwith "Unable to change user (bad client_response_auth_switch_request_plugin_mysql_native_password)"
+          )
+    )
+
+let reset_session ~connection =
+  let configuration = connection.configuration in
+  let _ = change_user ~connection
+    ~user:configuration.user
+    ~password:configuration.password
+    ~databasename:configuration.databasename
+    ~charset:(Mp_charset.number_charset configuration.charset_number) ()
+  in ()
+
+let reset_connection ~connection = 
+  let (ic, oc) = get_ic_oc ~connection:connection in
+  let bits = Mp_com.com_reset_connection in
+  let result = send_packet ~packet:bits ~ic:ic ~oc:oc ~sent:Mp_com.Reset_connection () in
   match result with
-  | [] -> failwith "No result (reset_session)"
+  | [] -> failwith "No result (reset_connection)"
   | (result, _)::_ -> (
       match result with
       | Mp_result_packet.Result_packet_ok _ -> ()
-      | _ -> failwith "Unable to reset session (bad answer)"
+      | _ -> failwith "Unable to reset connection (bad answer)"
     )
 
 let use_database ~connection ~databasename = 
@@ -292,7 +353,7 @@ let execute ~connection ~statement ?(filter = None) ?(iter = None) ?(return_all_
     | [] -> failwith "No result (execute)"
     | (result_set, _)::[] -> (
         match result_set with
-        | Mp_result_packet.Result_packet_result_set r -> 
+        | Mp_result_packet.Result_packet_result_set r ->
           Result_set r
         | Mp_result_packet.Result_packet_ok p ->
           Result_ok 
@@ -405,9 +466,9 @@ let close_statement ~connection ~statement =
   in
   let (_, oc) = get_ic_oc ~connection:connection in
   let handler = prepared.prepare_handler in
-  let bits = BITSTRING {
+  let%bitstring bits = {|
       handler : Mp_bitstring.compute32 : int, unsigned, littleendian
-    }
+    |}
   in
   let close_stmt = Mp_com.com_close_statement bits in
   (* no answer is expected (??) so we directly send the packet *)

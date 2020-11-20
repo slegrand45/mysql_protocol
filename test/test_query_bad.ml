@@ -1,7 +1,7 @@
-
 open OUnit
+open Mysql_protocol
 
-let test connection _ =
+let test vendor connection _ =
   let () = 
     let sql = "SELC * FROM test_ocmp LIMIT 1" in
     let stmt = Mp_client.create_statement_from_string sql in
@@ -9,7 +9,7 @@ let test connection _ =
       (Mp_client.Error {
           Mp_client.client_error_errno = 1064; 
           Mp_client.client_error_sqlstate = "42000"; 
-          Mp_client.client_error_message = "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '" ^ sql ^ "' at line 1"
+          Mp_client.client_error_message = "You have an error in your SQL syntax; check the manual that corresponds to your " ^ (Test_types.vendor_to_string vendor) ^ " server version for the right syntax to use near '" ^ sql ^ "' at line 1"
         } ) 
       (fun _ -> (Test_query.try_query ~f:(Mp_client.execute ~connection:connection ~statement:stmt ()) ~sql:sql))
   in
@@ -20,7 +20,7 @@ let test connection _ =
       (Mp_client.Error {
           Mp_client.client_error_errno = 1064; 
           Mp_client.client_error_sqlstate = "42000"; 
-          Mp_client.client_error_message = "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' at line 1"
+          Mp_client.client_error_message = "You have an error in your SQL syntax; check the manual that corresponds to your " ^ (Test_types.vendor_to_string vendor) ^ " server version for the right syntax to use near ''' at line 1"
         } ) 
       (fun _ -> (Test_query.try_query ~f:(Mp_client.execute ~connection:connection ~statement:stmt ()) ~sql:sql))
   in

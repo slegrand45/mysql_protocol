@@ -1,4 +1,5 @@
 open OUnit
+open Mysql_protocol
 
 let fields = Test_query_select.fields
 let records_equals = Test_query_select.records_equals
@@ -213,32 +214,125 @@ let test1 connection records =
     ()
   in
   let () = 
-    let sql = "SELECT * FROM test_ocmp WHERE f_autoinc_not_null_no_def = ? AND f_int_null_no_def = ? AND f_smallint_null_no_def = ? AND f_decimal_12_4_null_no_def = ? AND f_datetime_null_no_def = ? AND f_float_null_no_def = ? AND f_double_null_no_def = ? AND f_int24_null_no_def = ? AND f_date_null_no_def = ? AND f_time_null_no_def = ? AND f_year_null_no_def = ? AND f_string_null_no_def = ? AND f_varstring_null_no_def = ? AND f_blobtext_null_no_def = ? AND f_blobblob_null_no_def = ? AND f_blobtiny_null_no_def = ? AND f_blobmedium_null_no_def = ? AND f_bloblong_null_no_def = ? AND f_enum_null_no_def = ? AND (f_set_null_no_def = ? OR f_int_default_null IN (?)) AND f_timestamp_null_no_def = ? AND f_bit_null_no_def = ? AND f_tinyint_null_no_def_signed = ? AND f_tinyint_null_no_def_unsigned = ? AND f_int_null_no_def_signed = ? AND f_int_null_no_def_unsigned = ? AND f_smallint_null_no_def_signed = ? AND f_smallint_null_no_def_unsigned = ? AND f_decimal_65_20_null_no_def_signed = ? AND f_decimal_65_20_null_no_def_unsigned = ? AND (f_float_null_no_def_signed - 1e-307 <= ?) AND (f_float_null_no_def_unsigned - 1e-307 <= ?) AND (f_double_null_no_def_signed - 1e-307 <= ?) AND (f_double_null_no_def_unsigned - 1e-307 <= ?) AND f_int24_null_no_def_signed = ? AND f_int24_null_no_def_unsigned = ? AND f_bigint_null_no_def_signed = ? AND f_bigint_null_no_def_unsigned = ? AND (f_string_default_null = ? OR f_date_not_null_def20110101 = ?) AND f_datetime_not_null_def20111011140534 = ? AND f_timestamp_not_null_def20110510 = ? AND (f_time_not_null_def214702 = ? OR f_big_enum_default_null = ?) AND f_binary_default_null = ? AND f_varbinary_default_null = ? AND f_bigint_def_0 = ? AND f_int_def_0 = ? AND f_smallint_def_0 = ? AND f_decimal_20_9_def_0 = ? AND f_int24_def_0 = ? AND f_tinyint_def_0 = ?" in
+    let sql = {|
+      SELECT * FROM test_ocmp WHERE
+            f_autoinc_not_null_no_def = ?
+        AND f_int_null_no_def = ?
+        AND f_smallint_null_no_def = ?
+        AND f_decimal_12_4_null_no_def = ?
+        AND f_datetime_null_no_def = ?
+        AND f_float_null_no_def = ?
+        AND f_double_null_no_def = ?
+        AND f_int24_null_no_def = ?
+        AND f_date_null_no_def = ?
+        AND f_time_null_no_def = ?
+        AND f_year_null_no_def = ?
+        AND f_string_null_no_def = ?
+        AND f_varstring_null_no_def = ?
+        /* f_blobtext_null_no_def TEXT */
+        AND f_blobblob_null_no_def = ?
+        AND f_blobtiny_null_no_def = ?
+        AND f_blobmedium_null_no_def = ?
+        AND f_bloblong_null_no_def = ?
+        /* f_blobimg_null_no_def BLOB */
+        AND f_enum_null_no_def = ?
+        AND (f_set_null_no_def = ?
+          OR f_int_default_null IN (?))
+        AND f_timestamp_null_no_def = ?
+        AND f_bit_null_no_def = ?
+        AND f_tinyint_null_no_def_signed = ?
+        AND f_tinyint_null_no_def_unsigned = ?
+        AND f_int_null_no_def_signed = ?
+        AND f_int_null_no_def_unsigned = ?
+        AND f_smallint_null_no_def_signed = ?
+        AND f_smallint_null_no_def_unsigned = ?
+        AND f_decimal_65_20_null_no_def_signed = ?
+        AND f_decimal_65_20_null_no_def_unsigned = ?
+        AND f_float_null_no_def_signed - 1e-307 <= ?
+        AND f_float_null_no_def_unsigned - 1e-307 <= ?
+        AND f_double_null_no_def_signed - 1e-307 <= ?
+        AND f_double_null_no_def_unsigned - 1e-307 <= ?
+        AND f_int24_null_no_def_signed = ?
+        AND f_int24_null_no_def_unsigned = ?
+        AND f_bigint_null_no_def_signed = ?
+        AND f_bigint_null_no_def_unsigned = ?
+        AND (f_string_default_null = ?
+          OR f_date_not_null_def20110101 = ?)
+        AND f_datetime_not_null_def20111011140534 = ?
+        AND f_timestamp_not_null_def20110510 = ?
+        AND (f_time_not_null_def214702 = ?
+          OR f_big_enum_default_null = ?)
+        AND f_binary_default_null = ?
+        AND f_varbinary_default_null = ?
+        AND f_bigint_def_0 = ?
+        AND f_int_def_0 = ?
+        AND f_smallint_def_0 = ?
+        AND f_decimal_20_9_def_0 = ?
+        /* f_float_def_0 FLOAT */
+        /* f_double_def_0 DOUBLE */
+        AND f_int24_def_0 = ?
+        AND f_tinyint_def_0 = ? |}
+    in
     let stmt = Mp_client.create_statement_from_string sql in
     let p = Mp_client.prepare ~connection:connection ~statement:stmt in
     let get_params i = 
-      [List.nth (List.nth records i) 0; List.nth (List.nth records i) 1; List.nth (List.nth records i) 2;
-       List.nth (List.nth records i) 3; List.nth (List.nth records i) 4; List.nth (List.nth records i) 5;
-       List.nth (List.nth records i) 6; List.nth (List.nth records i) 7; List.nth (List.nth records i) 8;
-       List.nth (List.nth records i) 9; List.nth (List.nth records i) 10; List.nth (List.nth records i) 11;
-       List.nth (List.nth records i) 12; List.nth (List.nth records i) 13; List.nth (List.nth records i) 14;
-       List.nth (List.nth records i) 15; List.nth (List.nth records i) 16; List.nth (List.nth records i) 17;
-       (* List.nth (List.nth records i) 18; (* f_blobimg_null_no_def *) *)
-       List.nth (List.nth records i) 19; List.nth (List.nth records i) 20; List.nth (List.nth records i) 21;
-       List.nth (List.nth records i) 22; List.nth (List.nth records i) 23; List.nth (List.nth records i) 24; 
-       List.nth (List.nth records i) 25; List.nth (List.nth records i) 26; List.nth (List.nth records i) 27; 
-       List.nth (List.nth records i) 28; List.nth (List.nth records i) 29; List.nth (List.nth records i) 30;
-       List.nth (List.nth records i) 31; List.nth (List.nth records i) 32; List.nth (List.nth records i) 33;
-       List.nth (List.nth records i) 34; List.nth (List.nth records i) 35; List.nth (List.nth records i) 36; 
-       List.nth (List.nth records i) 37; List.nth (List.nth records i) 38; List.nth (List.nth records i) 39; 
-       List.nth (List.nth records i) 40; List.nth (List.nth records i) 41; List.nth (List.nth records i) 42; 
-       List.nth (List.nth records i) 43; List.nth (List.nth records i) 44; List.nth (List.nth records i) 45; 
-       List.nth (List.nth records i) 46; List.nth (List.nth records i) 47; List.nth (List.nth records i) 48; 
-       List.nth (List.nth records i) 49; List.nth (List.nth records i) 50; List.nth (List.nth records i) 51; 
-       (* List.nth (List.nth records i) 52; (* f_float_def_0  *) query returns empty result with MySQL 5.1.x *)
-       (* List.nth (List.nth records i) 53; (* f_double_def_0 *) query returns empty result with MySQL 5.1.x *)
-       List.nth (List.nth records i) 54; List.nth (List.nth records i) 55; 
-      ] 
+      [ List.nth (List.nth records i) 0;
+        List.nth (List.nth records i) 1;
+        List.nth (List.nth records i) 2;
+        List.nth (List.nth records i) 3;
+        List.nth (List.nth records i) 4;
+        List.nth (List.nth records i) 5;
+        List.nth (List.nth records i) 6;
+        List.nth (List.nth records i) 7;
+        List.nth (List.nth records i) 8;
+        List.nth (List.nth records i) 9;
+        List.nth (List.nth records i) 10;
+        List.nth (List.nth records i) 11;
+        List.nth (List.nth records i) 12;
+        (* List.nth (List.nth records i) 13; (* f_blobtext_null_no_def *) query returns empty result with MariaDB 10.5.6 *)
+        List.nth (List.nth records i) 14;
+        List.nth (List.nth records i) 15;
+        List.nth (List.nth records i) 16;
+        List.nth (List.nth records i) 17;
+        (* List.nth (List.nth records i) 18; (* f_blobimg_null_no_def *) *)
+        List.nth (List.nth records i) 19;
+        List.nth (List.nth records i) 20;
+        List.nth (List.nth records i) 21;
+        List.nth (List.nth records i) 22;
+        List.nth (List.nth records i) 23;
+        List.nth (List.nth records i) 24; 
+        List.nth (List.nth records i) 25;
+        List.nth (List.nth records i) 26;
+        List.nth (List.nth records i) 27;
+        List.nth (List.nth records i) 28;
+        List.nth (List.nth records i) 29;
+        List.nth (List.nth records i) 30;
+        List.nth (List.nth records i) 31;
+        List.nth (List.nth records i) 32;
+        List.nth (List.nth records i) 33;
+        List.nth (List.nth records i) 34;
+        List.nth (List.nth records i) 35;
+        List.nth (List.nth records i) 36; 
+        List.nth (List.nth records i) 37;
+        List.nth (List.nth records i) 38;
+        List.nth (List.nth records i) 39; 
+        List.nth (List.nth records i) 40;
+        List.nth (List.nth records i) 41;
+        List.nth (List.nth records i) 42; 
+        List.nth (List.nth records i) 43;
+        List.nth (List.nth records i) 44;
+        List.nth (List.nth records i) 45; 
+        List.nth (List.nth records i) 46;
+        List.nth (List.nth records i) 47;
+        List.nth (List.nth records i) 48; 
+        List.nth (List.nth records i) 49;
+        List.nth (List.nth records i) 50;
+        List.nth (List.nth records i) 51; 
+        (* List.nth (List.nth records i) 52; (* f_float_def_0  *) query returns empty result with MySQL 5.1.x *)
+        (* List.nth (List.nth records i) 53; (* f_double_def_0 *) query returns empty result with MySQL 5.1.x *)
+        List.nth (List.nth records i) 54;
+        List.nth (List.nth records i) 55; 
+      ]
     in
     let params = get_params 0 in
     let p = Mp_client.execute ~connection:connection ~statement:p ~params:params ~flag:Mp_execute.Cursor_type_read_only () in

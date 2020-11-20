@@ -45,7 +45,7 @@ let capabilities_to_string capabilities =
 
 (* /!\ : NEED CHECK !!!!!! *)
 let decode_server_capabilities bits = 
-  bitmatch bits with
+  match%bitstring bits with
 (* 
    | {
    long_password : 1;
@@ -66,7 +66,7 @@ let decode_server_capabilities bits =
    secure_connection : 1 
    }
 *)
-| {
+| {|
   secure_connection : 1;
   reserved : 1;
   transactions : 1;
@@ -82,7 +82,7 @@ let decode_server_capabilities bits =
   connect_with_db : 1;
   long_flag : 1;
   found_rows : 1;
-  long_password : 1 } ->
+  long_password : 1 |} ->
   let l = [] in
   let l = if long_password then Client_long_password::l else l in
   let l = if found_rows then Client_found_rows::l else l in

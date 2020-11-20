@@ -3,9 +3,9 @@ open Mysql_protocol
 
 let test1 connection = 
   let () = 
-    assert_equal ~msg:"Ping"
+    assert_equal ~msg:"Reset connection"
       (())
-      (Mp_client.ping ~connection:connection)
+      (Mp_client.reset_connection ~connection:connection)
   in
   ()
 

@@ -1,5 +1,5 @@
-
 open OUnit
+open Mysql_protocol
 
 let build_ok_grant = 
   { Mp_client.affected_rows = Int64.zero;
@@ -30,7 +30,7 @@ let result_equals ok r =
   && (message_ok = message_r)
 
 let test1 host connection db_name = 
-  let (_, _, _, _, db_user, _) = host in
+  let (_, _, _, db_user, _) = host in
   let () = Mp_client.(
     let sql = "GRANT SELECT ON " ^ db_name ^ ".* TO '" ^ db_user ^ "'@'localhost'" in
     let stmt = create_statement_from_string sql in

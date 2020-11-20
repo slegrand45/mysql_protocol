@@ -14,11 +14,12 @@ let result_packet_to_string p =
   | Result_packet_eof r -> Mp_eof_packet.eof_packet_to_string r
   | Result_packet_error r -> Mp_error_packet.error_packet_to_string r
 
-let rec result_packet ic oc filter iter return_all_raw_mysql_data type_sent fields acc = 
+let rec result_packet ic oc filter iter return_all_raw_mysql_data type_sent fields acc =
   let (_, packet_number, bits) = Mp_packet.extract_packet ic oc in
-  bitmatch bits with
-  | { type_packet : 1*8 : int, unsigned, bigendian;
-      rest : -1 : bitstring } ->
+  let length_rest = (Bitstring.bitstring_length bits) - 8 in
+  match%bitstring bits with
+  | {| type_packet : 1*8 : int, unsigned, bigendian;
+      rest : length_rest : bitstring |} ->
         if (type_packet = 0x00) then (
           match type_sent with
           | Mp_com.Prepare -> (

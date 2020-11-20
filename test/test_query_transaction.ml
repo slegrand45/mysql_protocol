@@ -1,4 +1,5 @@
 open OUnit
+open Mysql_protocol
 
 let test1 connection =
   let () = Mp_client.(

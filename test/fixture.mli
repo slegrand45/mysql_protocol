@@ -1,3 +1,5 @@
+open Mysql_protocol
+
 module type FIXTURE = sig
   val db_name : string
   val insert_var_string : string
@@ -19,13 +21,13 @@ module type FIXTURE = sig
   val records : Mp_data.t list list
   val blobbig : Buffer.t
   val records_blobbig : Mp_data.t list list
-  val records_date : int -> Mp_data.t list list
+  val records_date : Test_types.vendor -> int -> Mp_data.t list list
   val records_bigstring : Mp_data.t list list
   val records_bigvarchar : Mp_data.t list list
   val records_bigvarbinary : Mp_data.t list list
   val records_manyblobs : Mp_data.t list list
-  val records_proc_one_result : Mp_data.t list list
-  val records_proc_multiple_results : Mp_data.t list list
+  val records_proc_one_result : Test_types.vendor -> Mp_data.t list list
+  val records_proc_multiple_results : Test_types.vendor -> Mp_data.t list list
   val ok_value_iter : string
   val sql : string
 end

@@ -38,12 +38,12 @@ let ok_prepare_packet_to_string p =
     (List.fold_left f_name "" p.ok_prepare_columns_names)
 
 let ok_prepare_packet bits ic oc = 
-  bitmatch bits with
-  | { handler : Mp_bitstring.compute32 : int, unsigned, littleendian;
+  match%bitstring bits with
+  | {| handler : Mp_bitstring.compute32 : int, unsigned, littleendian;
       nb_columns : 2*8 : int, unsigned, littleendian;
       nb_parameters : 2*8 : int, unsigned, littleendian;
       0x0 : 8 : int;
-      warning_count : 2*8 : int, unsigned, littleendian } -> 
+      warning_count : 2*8 : int, unsigned, littleendian |} -> 
         let (list_field_parameters, list_name_parameters) =
           if (nb_parameters > 0) then (
             let list_field_packets = ref [] in

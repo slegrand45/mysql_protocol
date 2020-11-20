@@ -20,7 +20,7 @@ let run() =
     let print_data f = 
       let (field_name, field_pos) = f in
       let data = List.nth row field_pos in
-      print_endline ("  " ^ field_name ^ ": " ^ (Mp_data.to_string data))
+      print_endline ("  " ^ field_name ^ ": " ^ (Option.value (Mp_data.to_string data) ~default:""))
     in
     let () = List.iter print_data fields in
     print_endline "  -- --  "
@@ -36,18 +36,21 @@ let run() =
   in
 
   (* server address *)
-  let addr = Unix.inet_addr_of_string "192.168.1.20" in
+  (* let addr = Unix.inet_addr_of_string "192.168.1.20" in *)
 
   (* server port *)
-  let port = 3306 in
+  (* let port = 3306 in *)
 
-  let sockaddr = Unix.ADDR_INET(addr, port) in
+  (* let sockaddr = Unix.ADDR_INET(addr, port) in *)
+  let sockaddr = Unix.ADDR_UNIX "/usr/jails/mariadb/var/run/mysql/mysql.sock" in
 
   (* MySQL user login *)
   let db_user = "user_ocaml_ocmp" in
+  let db_user_2 = "u_ocmp_npauth" in
 
   (* MySQL user password *)
   let db_password = "ocmp" in
+  let db_password_2 = "ocmpnpauth" in
 
   (* database name *)
   let db_name = "test_ocaml_ocmp_utf8" in
@@ -142,8 +145,14 @@ let run() =
   (* PING server *)
   let () = Mp_client.ping ~connection:connection in
 
+  (* change user *)
+  let _ = Mp_client.change_user ~connection:connection ~user:db_user_2 ~password:db_password_2 ~databasename:db_name () in
+
   (* reset session (equivalent to a disconnect and reconnect) *)
   let () = Mp_client.reset_session ~connection:connection in
+
+  (* reset connection without re-authentication *)
+  let () = Mp_client.reset_connection ~connection:connection in
 
   (* catch MySQL error *)
   let stmt = Mp_client.create_statement_from_string ("BAD SQL QUERY") in

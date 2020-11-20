@@ -4,22 +4,25 @@ let case_datetime_timestamp_date field_type v =
     if (length = 0) then
       ((0, 0, 0), (0, 0, 0, Int64.zero))
     else
-      bitmatch v with
-      | { year : 2 * 8 : int, unsigned, littleendian;	rest : -1 : bitstring } -> (
+      match%bitstring v with
+      | {| year : 2 * 8 : int, unsigned, littleendian;
+            rest : length - (2*8) : bitstring |} -> (
           if (Bitstring.bitstring_length rest > 0) then
-            bitmatch rest with
-            | { month : 1 * 8 : int, unsigned, littleendian;
+            let length_rest = (Bitstring.bitstring_length rest) - (2*8) in
+            match%bitstring rest with
+            | {| month : 1 * 8 : int, unsigned, littleendian;
                 day : 1 * 8 : int, unsigned, littleendian;
-                rest : -1 : bitstring } -> (
+                rest : length_rest : bitstring |} -> (
                   if (Bitstring.bitstring_length rest > 0) then
-                    bitmatch rest with
-                    | { hour : 1 * 8 : int, unsigned, littleendian;
+                    let length_rest = (Bitstring.bitstring_length rest) - (3*8) in
+                    match%bitstring rest with
+                    | {| hour : 1 * 8 : int, unsigned, littleendian;
                         min : 1 * 8 : int, unsigned, littleendian;
                         sec : 1 * 8 : int, unsigned, littleendian;
-                        rest : -1 : bitstring } -> (
+                        rest : length_rest : bitstring |} -> (
                           if (Bitstring.bitstring_length rest > 0) then
-                            bitmatch rest with
-                            | { subsecond : Mp_bitstring.compute32 : int, unsigned, littleendian } -> (
+                            match%bitstring rest with
+                            | {| subsecond : Mp_bitstring.compute32 : int, unsigned, littleendian |} -> (
                                 ((year, month, day), (hour, min, sec, subsecond))
                               )
                           else
@@ -49,9 +52,9 @@ let data_value_to_sql_value_date_time_types field_type v =
       if (length = 0) then
         Mp_data.data_time (Mp_data.Positive, 0, 0, 0, Int64.zero)
       else
-        bitmatch v with
-        | { sign : 1 * 8 : int, unsigned, littleendian;
-            rest : -1 : bitstring } -> (
+        match%bitstring v with
+        | {| sign : 1 * 8 : int, unsigned, littleendian;
+            rest : length - 8 : bitstring |} -> (
               let pos_or_neg = 
                 match sign with 
                 | 1 -> Mp_data.Negative
@@ -59,22 +62,24 @@ let data_value_to_sql_value_date_time_types field_type v =
                 | _ -> assert false
               in
               if (Bitstring.bitstring_length rest > 0) then
-                bitmatch rest with
-                | { day : Mp_bitstring.compute32 : int, unsigned, littleendian;
-                    rest : -1 : bitstring } -> (
+                let length_rest = (Bitstring.bitstring_length rest) - Mp_bitstring.compute32 in
+                match%bitstring rest with
+                | {| day : Mp_bitstring.compute32 : int, unsigned, littleendian;
+                    rest : length_rest : bitstring |} -> (
                       let hour_day = Int64.mul day (Int64.of_int 24) in
                       (* cast should be ok, documentation says : 
                          			     "TIME values may range from '-838:59:59' to '838:59:59'" *)
                       let hour_day = Int64.to_int hour_day in
                       if (Bitstring.bitstring_length rest > 0) then
-                        bitmatch rest with
-                        | { hour : 1 * 8 : int, unsigned, littleendian;
+                        let length_rest = (Bitstring.bitstring_length rest) - (3*8) in
+                        match%bitstring rest with
+                        | {| hour : 1 * 8 : int, unsigned, littleendian;
                             min : 1 * 8 : int, unsigned, littleendian;
                             sec : 1 * 8 : int, unsigned, littleendian;
-                            rest : -1 : bitstring } -> (
+                            rest : length_rest : bitstring |} -> (
                               if (Bitstring.bitstring_length rest > 0) then
-                                bitmatch rest with
-                                | { subsecond : Mp_bitstring.compute32 : int, unsigned, littleendian } -> (
+                                match%bitstring rest with
+                                | {| subsecond : Mp_bitstring.compute32 : int, unsigned, littleendian |} -> (
                                     Mp_data.data_time (pos_or_neg, hour + hour_day, min, sec, subsecond)
                                   )
                               else
@@ -95,8 +100,8 @@ let data_value_to_sql_value v field =
   (* /!\ : should not happen because null values are sent with the null bitfield *)
   | Mp_field_packet.Field_type_null -> Mp_data.data_null
   | Mp_field_packet.Field_type_longlong -> (
-      bitmatch v with
-      | { d : 8 * 8 : int, littleendian } ->
+      match%bitstring v with
+      | {| d : 8 * 8 : int, littleendian |} ->
         let field_flags = field.Mp_field_packet.field_flags in
         let bi = Big_int.big_int_of_int64 d in
         let bi = 
@@ -110,8 +115,8 @@ let data_value_to_sql_value v field =
     )
   | Mp_field_packet.Field_type_long -> (
       let field_flags = field.Mp_field_packet.field_flags in
-      bitmatch v with
-      | { d : Mp_bitstring.compute32 : int, littleendian } ->
+      match%bitstring v with
+      | {| d : Mp_bitstring.compute32 : int, littleendian |} ->
         if (List.mem Mp_field_packet.Field_flag_unsigned field_flags) then
           Mp_data.data_longint d
         else
@@ -122,8 +127,8 @@ let data_value_to_sql_value v field =
     )
   | Mp_field_packet.Field_type_short -> (
       let field_flags = field.Mp_field_packet.field_flags in
-      bitmatch v with
-      | { d : 2 * 8 : int, littleendian } ->
+      match%bitstring v with
+      | {| d : 2 * 8 : int, littleendian |} ->
         if (List.mem Mp_field_packet.Field_flag_unsigned field_flags) then
           Mp_data.data_smallint d
         else
@@ -134,8 +139,8 @@ let data_value_to_sql_value v field =
     )
   | Mp_field_packet.Field_type_tiny -> (
       let field_flags = field.Mp_field_packet.field_flags in
-      bitmatch v with
-      | { d : 1 * 8 : int, littleendian } ->
+      match%bitstring v with
+      | {| d : 1 * 8 : int, littleendian |} ->
         if (List.mem Mp_field_packet.Field_flag_unsigned field_flags) then
           Mp_data.data_tinyint d
         else
@@ -145,13 +150,13 @@ let data_value_to_sql_value v field =
             Mp_data.data_tinyint d
     )
   | Mp_field_packet.Field_type_float -> (
-      bitmatch v with
-      | { d : 4 * 8 : int, littleendian } ->
+      match%bitstring v with
+      | {| d : 4 * 8 : int, littleendian |} ->
         Mp_data.data_float (Int32.float_of_bits d)
     )
   | Mp_field_packet.Field_type_double -> (
-      bitmatch v with
-      | { d : 8 * 8 : int, littleendian } ->
+      match%bitstring v with
+      | {| d : 8 * 8 : int, littleendian |} ->
         Mp_data.data_double (Int64.float_of_bits d)
     )
   | Mp_field_packet.Field_type_int24 -> (
@@ -159,8 +164,8 @@ let data_value_to_sql_value v field =
       (* 4 bytes with 0x00 or 0xff for the last one 
          	 so we only need the first 3 bytes 
       *)
-      bitmatch v with
-      | { d : 3 * 8 : int, littleendian } ->
+      match%bitstring v with
+      | {| d : 3 * 8 : int, littleendian |} ->
         if (List.mem Mp_field_packet.Field_flag_unsigned field_flags) then
           Mp_data.data_int24 d
         else
@@ -170,15 +175,15 @@ let data_value_to_sql_value v field =
             Mp_data.data_int24 d
     )
   | Mp_field_packet.Field_type_year -> (
-      bitmatch v with
-      | { d : 2 * 8 : int, littleendian } ->
+      match%bitstring v with
+      | {| d : 2 * 8 : int, littleendian |} ->
           Mp_data.data_year d
     )
   | Mp_field_packet.Field_type_newdecimal -> (
       let length = Bitstring.bitstring_length v in
       let nb_bytes = length / 8 in
-      bitmatch v with
-      | { d : length : string } ->
+      match%bitstring v with
+      | {| d : length : string |} ->
           let decimals = field.Mp_field_packet.field_decimals in
           let part_i_s = String.sub d 0 (nb_bytes - 1 - decimals) in
           let part_d_s = String.sub d (nb_bytes - decimals) decimals in
@@ -191,8 +196,8 @@ let data_value_to_sql_value v field =
     )
   | Mp_field_packet.Field_type_string -> (
       let length = Bitstring.bitstring_length v in
-      bitmatch v with
-      | { d : length : string } -> (
+      match%bitstring v with
+      | {| d : length : string |} -> (
           let field_flags = field.Mp_field_packet.field_flags in
           if (List.mem Mp_field_packet.Field_flag_enum field_flags) then 
             Mp_data.data_enum d
@@ -209,21 +214,21 @@ let data_value_to_sql_value v field =
   (* /!\ : should not happen because set is sent as a string *)
   | Mp_field_packet.Field_type_set -> (
       let length = Bitstring.bitstring_length v in
-      bitmatch v with
-      | { d : length : string } -> 
+      match%bitstring v with
+      | {| d : length : string |} -> 
           Mp_data.data_set d
     )
   (* /!\ : should not happen because enum is sent as a string *)
   | Mp_field_packet.Field_type_enum -> (
       let length = Bitstring.bitstring_length v in
-      bitmatch v with
-      | { d : length : string } ->
+      match%bitstring v with
+      | {| d : length : string |} ->
           Mp_data.data_enum d
     )
   | Mp_field_packet.Field_type_var_string -> (
       let length = Bitstring.bitstring_length v in
-      bitmatch v with
-      | { d : length : string } -> 
+      match%bitstring v with
+      | {| d : length : string |} -> 
         let field_flags = field.Mp_field_packet.field_flags in
         if (List.mem Mp_field_packet.Field_flag_binary field_flags) then
           let b = Buffer.create (String.length d) in
@@ -235,21 +240,21 @@ let data_value_to_sql_value v field =
   | Mp_field_packet.Field_type_varchar -> (
       (* TODO: add varchar to tests *)
       let length = Bitstring.bitstring_length v in
-      bitmatch v with
-      | { d : length : string } -> Mp_data.data_varchar d
+      match%bitstring v with
+      | {| d : length : string |} -> Mp_data.data_varchar d
     )
   | Mp_field_packet.Field_type_bit -> (
       let length = Bitstring.bitstring_length v in
-      bitmatch v with
-      | { d : length : bitstring } -> Mp_data.data_bit d
+      match%bitstring v with
+      | {| d : length : bitstring |} -> Mp_data.data_bit d
     )
   | Mp_field_packet.Field_type_tiny_blob
   | Mp_field_packet.Field_type_medium_blob
   | Mp_field_packet.Field_type_long_blob
   | Mp_field_packet.Field_type_blob -> (
       let length = Bitstring.bitstring_length v in
-      bitmatch v with
-      | { d : length : string } ->
+      match%bitstring v with
+      | {| d : length : string |} ->
         let b = Buffer.create length in
         let () = Buffer.add_string b d in
         Mp_data.data_blob b

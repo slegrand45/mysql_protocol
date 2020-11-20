@@ -1,5 +1,5 @@
-
 open OUnit
+open Mysql_protocol
 
 let build_ok_insert id = 
   { Mp_client.affected_rows = Int64.one;

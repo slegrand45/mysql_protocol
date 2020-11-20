@@ -1,11 +1,14 @@
-
 open OUnit
+open Mysql_protocol
 
 let test1 connection = 
   let () = 
     assert_equal ~msg:"Reset session"
       (())
-      (Mp_client.reset_session ~connection:connection)
+      (let _ =
+        Mp_client.change_user ~connection:connection ~user:"u_ocmp_npauth_2" ~password:"ocmpnpauth2"
+          ~databasename:connection.configuration.databasename () in
+          ())
   in
   ()
 

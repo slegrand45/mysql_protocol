@@ -72,14 +72,13 @@ let build_params_part bind params fields =
   let nb_null_bits = Bitstring.bitstring_length bitstring_null in
   let nb_bitstring_type = Bitstring.bitstring_length bitstring_type in
   let nb_bitstring_data = Bitstring.bitstring_length bitstring_data in
-  let bits =
-    BITSTRING 
-      {
+  let%bitstring bits =
+      {|
         bitstring_null : nb_null_bits : bitstring;
         flag_bind : 1*8 : int, unsigned;
         bitstring_type : nb_bitstring_type : bitstring;
         bitstring_data : nb_bitstring_data : bitstring
-      }
+      |}
   in
   bits
 
@@ -87,12 +86,11 @@ let build_execute ~handler ?(flag = Cursor_type_no_cursor) ?(params = []) ?(fiel
   let flag = flag_to_int flag in
   let iteration_count = Int64.one in
   let part_params = build_params_part bind params fields in
-  let bits =
-    BITSTRING 
-      {
+  let%bitstring bits = 
+      {|
         handler : Mp_bitstring.compute32 : int, unsigned, littleendian;
         flag : 1*8 : int, unsigned;
         iteration_count : Mp_bitstring.compute32 : int, unsigned, littleendian
-      }
+      |}
   in
   Bitstring.concat [bits; part_params]

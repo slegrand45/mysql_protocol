@@ -1,5 +1,5 @@
-
 open OUnit
+open Mysql_protocol
 
 let build_ok_update affected matched changed = 
   { Mp_client.affected_rows = Int64.of_int affected;

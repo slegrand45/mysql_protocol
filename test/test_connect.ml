@@ -1,5 +1,5 @@
-
 open OUnit
+open Mysql_protocol
 
 let build_ok_update affected matched changed = 
   { Mp_client.affected_rows = Int64.of_int affected;
@@ -30,10 +30,13 @@ let result_equals ok r =
   && (message_ok = message_r)
 
 let test1 host config charset = 
-  let (_, _, addr, port, db_user, db_password) = host in
+  let (_, _, connection_type, db_user, db_password) = host in
   let () = 
     (* configuration *)
-    let sockaddr = Unix.ADDR_INET(addr, port) in
+    let sockaddr = match connection_type with
+      | Test_types.CInet (_, addr, port) -> Unix.ADDR_INET(addr, port)
+      | Test_types.CUnix path -> Unix.ADDR_UNIX path
+    in
     let databasename = config.Mp_client.databasename in
     let config = Mp_client.configuration 
         ~user:db_user ~password:db_password ~sockaddr:sockaddr 

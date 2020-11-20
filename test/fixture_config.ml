@@ -14,6 +14,10 @@
    GRANT ALL PRIVILEGES ON test_ocaml_ocmp_utf8.* TO 'u_ocmp_npauth'@'localhost';
    SET PASSWORD FOR 'u_ocmp_npauth'@'localhost' = PASSWORD('ocmpnpauth');
 
+   GRANT ALL PRIVILEGES ON test_ocaml_ocmp_latin1.* TO 'u_ocmp_npauth_2'@'localhost' IDENTIFIED WITH mysql_native_password;
+   GRANT ALL PRIVILEGES ON test_ocaml_ocmp_utf8.* TO 'u_ocmp_npauth_2'@'localhost';
+   SET PASSWORD FOR 'u_ocmp_npauth_2'@'localhost' = PASSWORD('ocmpnpauth2');
+
    GRANT FILE ON test_ocaml_ocmp_latin1.* TO 'user_ocaml_ocmp'@'localhost';
    GRANT FILE ON test_ocaml_ocmp_utf8.* TO 'user_ocaml_ocmp'@'localhost';
 
@@ -41,7 +45,7 @@
 
 let testfile f = 
   let dir = Unix.getcwd () in
-  let subdir = "test" in
+  let subdir = "" in
   Filename.concat (dir ^ (Filename.dir_sep) ^ subdir) f
 
 let testfile1 = testfile "caml-inria-fr.128x58.gif"
@@ -114,10 +118,10 @@ let mysql_escape_string s =
 let build_string n = 
   let s = ref "" in
   let () = 
-    let c = ref 0 in
+    let c = ref 32 in
     while (String.length !s < n) do
       let () = c := 
-          if (!c = 255) then 0 else !c
+          if (!c = 127) then 32 else !c
       in
       let () = 
         s := !s ^ (String.make 1 (Char.chr !c)) 

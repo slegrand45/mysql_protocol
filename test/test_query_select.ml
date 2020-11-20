@@ -1,5 +1,5 @@
-
 open OUnit
+open Mysql_protocol
 
 let print_warning=false
 
@@ -20,7 +20,7 @@ let build_mysql_field ~db_name ~table ~f ~cn ~fl ~ft ~flags ~decimals ~def =
     Mp_field_packet.version = Mp_protocol.Protocol_version_41;
   }
 
-let mysql_fields db_name charset version = 
+let mysql_fields vendor db_name charset version = 
   (* the field length depends on the charset *)
   let fl nb8bits = 
     let (encoding, _) = Mp_charset.number_charset charset in
@@ -28,19 +28,33 @@ let mysql_fields db_name charset version =
     | Mp_charset.Utf8 -> Int64.mul nb8bits (Int64.of_int 3)
     | _ -> nb8bits
   in
-  let flags_timestamp_null_no_def = 
-    if version >= 5611 then
-      [Mp_field_packet.Field_flag_timestamp; Mp_field_packet.Field_flag_not_null; Mp_field_packet.Field_flag_binary;] 
-    else
-      [Mp_field_packet.Field_flag_timestamp; Mp_field_packet.Field_flag_not_null; 
-       Mp_field_packet.Field_flag_unsigned; Mp_field_packet.Field_flag_zerofill; Mp_field_packet.Field_flag_binary;] 
+  let flags_timestamp_null_no_def =
+    match vendor with
+    | Test_types.MySQL -> (
+        if version >= 5611 then
+          [Mp_field_packet.Field_flag_timestamp; Mp_field_packet.Field_flag_not_null; Mp_field_packet.Field_flag_binary;] 
+        else
+          [Mp_field_packet.Field_flag_timestamp; Mp_field_packet.Field_flag_not_null; 
+            Mp_field_packet.Field_flag_unsigned; Mp_field_packet.Field_flag_zerofill; Mp_field_packet.Field_flag_binary;]
+      )
+    | Test_types.MariaDB -> (
+        [Mp_field_packet.Field_flag_timestamp; Mp_field_packet.Field_flag_not_null;
+          Mp_field_packet.Field_flag_unsigned; Mp_field_packet.Field_flag_binary;] 
+    )
   in
-  let flags_timestamp_not_null_def20110510 = 
-    if version >= 5611 then
-      [Mp_field_packet.Field_flag_not_null; Mp_field_packet.Field_flag_binary;] 
-    else
-      [Mp_field_packet.Field_flag_not_null; Mp_field_packet.Field_flag_unsigned; 
-       Mp_field_packet.Field_flag_zerofill; Mp_field_packet.Field_flag_binary;] 
+  let flags_timestamp_not_null_def20110510 =
+    match vendor with
+    | Test_types.MySQL -> (
+        if version >= 5611 then
+          [Mp_field_packet.Field_flag_not_null; Mp_field_packet.Field_flag_binary;] 
+        else
+          [Mp_field_packet.Field_flag_not_null; Mp_field_packet.Field_flag_unsigned; 
+           Mp_field_packet.Field_flag_zerofill; Mp_field_packet.Field_flag_binary;]
+      )
+    | Test_types.MariaDB -> (
+        [Mp_field_packet.Field_flag_not_null;
+          Mp_field_packet.Field_flag_unsigned; Mp_field_packet.Field_flag_binary;] 
+    )
   in
   let fl_time_null_no_def = if version >= 5611 then 10 else 8 in
   let fl_time_not_null_def214702 = if version >= 5611 then 10 else 8 in
@@ -331,7 +345,7 @@ let fields = [
   ("f_tinyint_def_0", 55);
 ]
 
-let fields_equals l1 l2 = 
+let fields_equals l1 l2 =
   l1 = l2
 
 let data_to_string d =
@@ -485,7 +499,7 @@ let records_equals r1 r2 =
   let (fields_r2, data_r2) = r2 in 
   (fields_equals fields_r1 fields_r2) && (data_equals data_r1 data_r2)
 
-let test1 connection records db_name version = 
+let test1 vendor connection records db_name version = 
   let () = 
     (* force the same timezone from fixture *)
     let sql = "SET time_zone='+0:0'" in
@@ -511,7 +525,7 @@ let test1 connection records db_name version =
         )
       | None -> assert false
     in
-    let fields_ok = mysql_fields db_name connection.Mp_client.configuration.Mp_client.charset_number version in
+    let fields_ok = mysql_fields vendor db_name connection.Mp_client.configuration.Mp_client.charset_number version in
     assert_equal ~msg:sql fields_ok (Test_query.try_query ~f:f ~sql:sql)
   in
   let () = Mp_client.(
@@ -596,7 +610,7 @@ let test_blobbig connection records_blobbig =
   ) in
   ()
 
-let test_date connection records_date version = 
+let test_date vendor connection records_date version = 
   let () = Mp_client.(
     let sql = "SELECT * FROM test_ocmp_date" in
     let stmt = create_statement_from_string sql in
@@ -613,11 +627,17 @@ let test_date connection records_date version =
   let () = Mp_client.(
     let sql = "SELECT DATE_FORMAT(f_datetime_null_no_def, \"%H:%i:%s.%f\") AS f1 FROM test_ocmp_date" in
     let stmt = create_statement_from_string sql in
-    let df2 = 
-      if version >= 5611 then
-        [Mp_data.data_varstring "13:17:05.000000"]
-      else
-        [Mp_data.data_varstring "13:17:04.000000"]
+    let df2 =
+      match vendor with
+      | Test_types.MySQL -> (
+          if version >= 5611 then
+            [Mp_data.data_varstring "13:17:05.000000"]
+          else
+            [Mp_data.data_varstring "13:17:04.000000"]
+        )
+      | Test_types.MariaDB -> (
+          [Mp_data.data_varstring "13:17:04.000000"]
+        )
     in
     assert_equal ~msg:sql 
       ~cmp:records_equals
@@ -808,7 +828,7 @@ let test_proc_multiple_results connection records_proc_multiple_results =
   ()
 
 let test host connection encoding _ = 
-  let (version, _, _, _, _, _) = host in
+  let (vendor, version, _, _, _) = host in
   (*
     We use AsText() function to retrieve the geometry data
     so it's a blob type and not a geometry one
@@ -844,13 +864,13 @@ let test host connection encoding _ =
     ) : Fixture.FIXTURE
   )
   in
-  let () = test1 connection F.records F.db_name version in
+  let () = test1 vendor connection F.records F.db_name version in
   let () = test_geo connection records_geo in
   let () = test_blobbig connection F.records_blobbig in
-  let () = test_date connection (F.records_date version) version in
+  let () = test_date vendor connection (F.records_date vendor version) version in
   let () = test_bigstring connection F.records_bigstring F.records_bigvarchar F.records_bigvarbinary in
   let () = test_manyblobs connection F.records_manyblobs F.db_name in
-  let () = test_proc_one_result connection F.records_proc_one_result in
-  let () = test_proc_multiple_results connection F.records_proc_multiple_results in
+  let () = test_proc_one_result connection (F.records_proc_one_result vendor) in
+  let () = test_proc_multiple_results connection (F.records_proc_multiple_results vendor) in
   let () = test_filter_iter connection F.records F.ok_value_iter in
   ()

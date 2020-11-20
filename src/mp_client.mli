@@ -163,10 +163,44 @@ val connect :
   -> connection
 
 (**
+  Change user / databasename / charset
+  @param connection Connection.
+  @param user Login.
+  @param password Password.
+  @param databasename Database name.
+  @param charset Charset and collation name.
+*)
+val change_user :
+  connection:connection
+  -> user:string
+  -> password:string
+  -> ?databasename:string
+  -> ?charset:Mp_charset.charset_name * Mp_charset.collation_name
+  -> unit
+  -> configuration
+
+(**
    Reset the session : equivalent to a disconnect/reconnect with the same configuration.
    @param connection Connection.
 *)
 val reset_session :
+  connection:connection
+  -> unit
+
+(**
+  Reset the connection without re-authentication.
+  From {{:https://mariadb.com/kb/en/com_reset_connection/} documentation}), this will:
+  - rollback any open transaction
+  - reset transaction isolation level
+  - reset session variables
+  - delete user variables
+  - remove temporary tables
+  - remove all PREPARE statement
+
+  Database will NOT be reset to initial value.
+  @param connection Connection.
+*)
+val reset_connection :
   connection:connection
   -> unit
 

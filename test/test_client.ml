@@ -1,9 +1,13 @@
+open Mysql_protocol
 
 let test1 host db_name encoding = 
   let () = 
-    let (version, _, addr, port, db_user, db_password) = host in
+    let (_, version, connection_type, db_user, db_password) = host in
     (* configuration *)
-    let sockaddr = Unix.ADDR_INET(addr, port) in
+    let sockaddr = match connection_type with
+      | Test_types.CInet (_, addr, port) -> Unix.ADDR_INET(addr, port)
+      | Test_types.CUnix path -> Unix.ADDR_UNIX path
+    in
     let config = Mp_client.configuration 
         ~user:db_user ~password:db_password ~sockaddr:sockaddr 
         ~databasename:db_name ~charset:encoding () in
@@ -82,8 +86,13 @@ let test1 host db_name encoding =
     let _ = Mp_client.fetch ~connection:connection ~statement:stmt () in
     (* ping *)
     let () = Mp_client.ping ~connection:connection in
-    (* reset / change user *)
+    (* change user *)
+    let _ = Mp_client.change_user ~connection:connection ~user:"u_ocmp_npauth_2" ~password:"ocmpnpauth2"
+          ~databasename:connection.configuration.databasename () in
+    (* reset session *)
     let () = Mp_client.reset_session ~connection:connection in
+    (* reset connection *)
+    let () = Mp_client.reset_connection ~connection:connection in
     (* select (non prepared) *)
     let stmt = Mp_client.create_statement_from_string ("SELECT * FROM test_ocmp_client ORDER BY id LIMIT 1") in
     let _ = Mp_client.execute ~connection:connection ~statement:stmt () in

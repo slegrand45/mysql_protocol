@@ -121,8 +121,8 @@ let result_set_packet result_set_field_count bits ic oc filter iter return_all_r
       while (not !data_packets_end) do
         let first_byte = Bitstring.takebits 8 !bits in
         let () = 
-          bitmatch first_byte with
-          | { test_packets_end : 1*8 : int, unsigned, bigendian } -> (
+          match%bitstring first_byte with
+          | {| test_packets_end : 1*8 : int, unsigned, bigendian |} -> (
               if (test_packets_end = 0xfe) then (
                 data_packets_end := true;
                 let eof = Mp_eof_packet.eof_packet_bits !bits in

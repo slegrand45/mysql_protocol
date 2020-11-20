@@ -1,5 +1,5 @@
-
 open OUnit
+open Mysql_protocol
 
 let build_ok_delete affected status = 
   { Mp_client.affected_rows = affected;

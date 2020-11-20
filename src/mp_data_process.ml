@@ -26,10 +26,11 @@ let data_list field_packets row_data_packets =
 
 let to_type_number d =
   let bitstring_type_number numtype unsigned = 
-    BITSTRING 
-      { numtype : 8 : int, unsigned, littleendian;
+    let%bitstring v = 
+      {| numtype : 8 : int, unsigned, littleendian;
         unsigned : 1 : int;
-        0x0 : 7 : int, littleendian }
+        0x0 : 7 : int, littleendian |}
+    in v
   in
   match d with
     Mp_data.Decimal v -> (* use MySQL Newdecimal type instead of Decimal = 0 *)
@@ -150,11 +151,13 @@ let to_bitstring_longlongint v =
     let v_int64 = Big_int.int64_of_big_int v in
     let max = Big_int.sub_big_int (Big_int.power_int_positive_int 2 63) Big_int.unit_big_int in
     if (Big_int.gt_big_int v max) then
-      BITSTRING 
-        { v_int64 : 8*8 : int, unsigned, littleendian }
+      let%bitstring v = 
+        {| v_int64 : 8*8 : int, unsigned, littleendian |}
+      in v
     else
-      BITSTRING 
-        { v_int64 : 8*8 : int, littleendian }
+      let%bitstring v = 
+        {| v_int64 : 8*8 : int, littleendian |}
+      in v
   with
   | Failure _ -> ( (* the big integer is > 2^63 - 1*)
       let max = Big_int.sub_big_int (Big_int.power_int_positive_int 2 64) Big_int.unit_big_int in
@@ -162,8 +165,9 @@ let to_bitstring_longlongint v =
         failwith "Bigint overflow ( > 2^64 - 1)"
       else
         let v_int64 = decimal_to_binary v in
-        BITSTRING 
-          { v_int64 : 8*8 : bitstring }
+        let%bitstring v = 
+          {| v_int64 : 8*8 : bitstring |}
+        in v
     )
 
 let to_bitstring d =
@@ -175,19 +179,21 @@ let to_bitstring d =
         v
     in
     if (Int64.compare v (Int64.of_string "2147483647") > 0) then (
-      BITSTRING
-        { v : Mp_bitstring.compute32 : int, unsigned, littleendian }
+      let%bitstring v =
+        {| v : Mp_bitstring.compute32 : int, unsigned, littleendian |}
+      in v
     )
     else (
-      BITSTRING
-        { v : Mp_bitstring.compute32 : int, littleendian }
+      let%bitstring v =
+        {| v : Mp_bitstring.compute32 : int, littleendian |}
+      in v
     )
   in
   let datetime_timestamp v =
     let ((year, month, day), (hour, min, sec, subsecond)) = v in
     (* first byte length is static = 2 + 1 + 1 + 1 + 1 + 1 + 4 *)
-    BITSTRING
-      { 11 : 1 * 8 : int, littleendian;
+    let%bitstring v =
+      {| 11 : 1 * 8 : int, littleendian;
         year : 2 * 8 : int, littleendian;
         month : 1 * 8 : int, littleendian;
         day : 1 * 8 : int, littleendian;
@@ -195,15 +201,17 @@ let to_bitstring d =
         min : 1 * 8 : int, littleendian;
         sec : 1 * 8 : int, littleendian;
         subsecond : Mp_bitstring.compute32 : int, littleendian
-      }
+      |}
+    in v
   in
   let varchar_varstring_string_enum_set v =
     let length = String.length v in
     let bitstring_length = Mp_binary.build_length_coded_binary length in
     if (length > 0) then (
       let bitstring_data =
-        BITSTRING
-          { v : length * 8 : string }
+        let%bitstring v =
+          {| v : length * 8 : string |}
+        in v
       in
       Bitstring.concat [bitstring_length; bitstring_data]
     ) else (
@@ -216,8 +224,9 @@ let to_bitstring d =
     let bitstring_length = Mp_binary.build_length_coded_binary length in
     if (length > 0) then (
       let bitstring_data =
-        BITSTRING
-          { v : length * 8 : string }
+        let%bitstring v =
+          {| v : length * 8 : string |}
+        in v
       in
       Bitstring.concat [bitstring_length; bitstring_data]
     ) else (
@@ -234,12 +243,14 @@ let to_bitstring d =
         v
     in
     if (v > 127) then (
-      BITSTRING 
-        { v : 1*8 : int, unsigned }
+      let%bitstring v = 
+        {| v : 1*8 : int, unsigned |}
+      in v
     )
     else (
-      BITSTRING 
-        { v : 1*8 : int }
+      let%bitstring v = 
+        {| v : 1*8 : int |}
+      in v
     )
   | Mp_data.Smallint v ->
     let v = 
@@ -249,12 +260,14 @@ let to_bitstring d =
         v
     in
     if (v > 32767) then (
-      BITSTRING 
-        { v : 2*8 : int, unsigned, littleendian }
+      let%bitstring v = 
+        {| v : 2*8 : int, unsigned, littleendian |}
+      in v
     )
     else (
-      BITSTRING 
-        { v : 2*8 : int, littleendian }
+      let%bitstring v = 
+        {| v : 2*8 : int, littleendian |}
+      in v
     )
   | Mp_data.Int v ->
     let v = Int64.of_int v in
@@ -269,8 +282,9 @@ let to_bitstring d =
     let bitstring_length = Mp_binary.build_length_coded_binary length in
     if (length > 0) then (
       let bitstring_data = 
-        BITSTRING 
-          { s : length * 8 : string }
+        let%bitstring v = 
+          {| s : length * 8 : string |}
+        in v
       in
       Bitstring.concat [bitstring_length; bitstring_data]
     ) else (
@@ -279,12 +293,13 @@ let to_bitstring d =
   | Mp_data.Date v -> 
     let (year, month, day) = v in
     (* first byte length is static = 2 + 1 + 1 *)
-    BITSTRING 
-      { 4 : 1 * 8 : int, unsigned, littleendian;
+    let%bitstring v = 
+      {| 4 : 1 * 8 : int, unsigned, littleendian;
         year : 2 * 8 : int, unsigned, littleendian;
         month : 1 * 8 : int, unsigned, littleendian;
         day : 1 * 8 : int, unsigned, littleendian
-      }
+      |}
+    in v
   | Mp_data.Time v ->
     let (sign, hour, min, sec, subsecond) = v in
     let bitstring_sign = 
@@ -298,25 +313,28 @@ let to_bitstring d =
       else (Int32.zero, hour)
     in
     (* first byte length is static = 1 + 4 + 1 + 1 + 1 + 4 *)
-    BITSTRING
-      { 12 : 1 * 8 : int, unsigned, littleendian;
+    let%bitstring v =
+      {| 12 : 1 * 8 : int, unsigned, littleendian;
         bitstring_sign : 1 * 8 : int, unsigned, littleendian;
         day : 4 * 8 : int, littleendian;
         hour : 1 * 8 : int, littleendian;
         min : 1 * 8 : int, littleendian;
         sec : 1 * 8 : int, littleendian;
         subsecond : Mp_bitstring.compute32 : int, littleendian
-      }
+      |}
+    in v
   | Mp_data.Datetime v -> datetime_timestamp v
   | Mp_data.Timestamp v -> datetime_timestamp v
   | Mp_data.Float v -> 
     let v = Int32.bits_of_float v in
-    BITSTRING
-      { v : 4 * 8 : int, littleendian }
+    let%bitstring v =
+      {| v : 4 * 8 : int, littleendian |}
+    in v
   | Mp_data.Double v -> 
     let v = Int64.bits_of_float v in
-    BITSTRING
-      { v : 8 * 8 : int, littleendian }
+    let%bitstring v =
+      {| v : 8 * 8 : int, littleendian |}
+    in v
   | Mp_data.Int24 v -> 
     (* byte padding is different for positive and negative integer *)
     let (v, padding) = 
@@ -327,23 +345,27 @@ let to_bitstring d =
     in
     (* 4 bytes with 0x00 or 0xff for the last one *)
     if (v > 8388607) then (
-      BITSTRING 
-        { v : 3*8 : int, unsigned, littleendian;
-          padding : 1*8 : int, unsigned, littleendian }
+      let%bitstring v = 
+        {| v : 3*8 : int, unsigned, littleendian;
+          padding : 1*8 : int, unsigned, littleendian |}
+      in v
     )
     else (
-      BITSTRING 
-        { v : 3*8 : int, littleendian;
-          padding : 1*8 : int, littleendian }
+      let%bitstring v = 
+        {| v : 3*8 : int, littleendian;
+          padding : 1*8 : int, littleendian |}
+      in v
     )
   | Mp_data.Year v -> 
     if (v >= 0) then (
-      BITSTRING 
-        { v : 2*8 : int, unsigned, littleendian }
+      let%bitstring v = 
+        {| v : 2*8 : int, unsigned, littleendian |}
+      in v
     )
     else (
-      BITSTRING 
-        { v : 2*8 : int, littleendian }
+      let%bitstring v = 
+        {| v : 2*8 : int, littleendian |}
+      in v
     )
   | Mp_data.Varchar v -> (* TODO: add Varchar to tests *)
     varchar_varstring_string_enum_set v
@@ -363,10 +385,11 @@ let to_bitstring d =
     binary_varbinary_blob v
   | Mp_data.Bit v -> (* send an unsigned 64 bit long long integer ?? *)
     let bits = 
-      bitmatch v with
-      | { v_int64 : 8*8 : int, unsigned } ->
-          BITSTRING
-            { v_int64 : 8*8 : int, unsigned, littleendian }
+      match%bitstring v with
+      | {| v_int64 : 8*8 : int, unsigned |} ->
+          let%bitstring v =
+            {| v_int64 : 8*8 : int, unsigned, littleendian |}
+          in v
     in
     bits
   | Mp_data.Geometry v -> (* opaque type: send as is *)

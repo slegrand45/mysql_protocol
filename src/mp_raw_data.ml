@@ -43,9 +43,10 @@ let binary data field_packet =
       )
     | _ -> assert false
   in
-  bitmatch data with
-| { value : (Int64.to_int length_bits) : bitstring;
-    rest : -1 : bitstring } -> (value, rest)
+  let length_rest = (Bitstring.bitstring_length data) - (Int64.to_int length_bits) in
+  match%bitstring data with
+  | {| value : (Int64.to_int length_bits) : bitstring;
+    rest : length_rest : bitstring |} -> (value, rest)
 
 let raw_data_packet_binary list_field_packet list_null_fields bits =
   let nb_columns = List.length list_field_packet in
@@ -78,15 +79,15 @@ let null_bytes bits =
   let nb_bytes = (Bitstring.bitstring_length bits) / 8 in
   if (nb_bytes > 0) then (
     let byte b l = 
-      bitmatch b with
-      | { bit0 : 1 : int;
+      match%bitstring b with
+      | {| bit0 : 1 : int;
           bit1 : 1 : int;
           bit2 : 1 : int;
           bit3 : 1 : int;
           bit4 : 1 : int;
           bit5 : 1 : int;
           bit6 : 1 : int;
-          bit7 : 1 : int } -> (
+          bit7 : 1 : int |} -> (
             l := bit7 :: !l;
             l := bit6 :: !l;
             l := bit5 :: !l;
@@ -116,9 +117,10 @@ let raw_data_packet list_field_packet type_sent count_rows bits =
     | Mp_com.Fetch ->
       if (count_rows > 0) then
         if (Bitstring.bitstring_length bits > 0) then (
-          bitmatch bits with
-          | { test : 1*8 : int, unsigned;
-              rest : -1 : bitstring } -> (
+          let length_rest = (Bitstring.bitstring_length bits) - 8 in
+          match%bitstring bits with
+          | {| test : 1*8 : int, unsigned;
+              rest : length_rest : bitstring |} -> (
                 if (test = 0) then
                   let () = binary_encoding := true in
                   rest
@@ -132,9 +134,10 @@ let raw_data_packet list_field_packet type_sent count_rows bits =
         bits
     | _ ->
       if (Bitstring.bitstring_length bits > 0) then (
-        bitmatch bits with
-        | { test : 1*8 : int, unsigned;
-            rest : -1 : bitstring } -> (
+        let length_rest = (Bitstring.bitstring_length bits) - 8 in
+        match%bitstring bits with
+        | {| test : 1*8 : int, unsigned;
+            rest : length_rest : bitstring |} -> (
               if (test = 0) then
                 let () = binary_encoding := true in
                 rest
@@ -146,9 +149,10 @@ let raw_data_packet list_field_packet type_sent count_rows bits =
   in
   if (!binary_encoding) then (
     let nb_null_bits = ((((List.length list_field_packet) + 7 + 2) / 8) * 8) in
-    bitmatch bits with
-    | { null_bits : nb_null_bits : bitstring;
-        rest : -1 : bitstring } -> (
+    let length_rest = (Bitstring.bitstring_length bits) - nb_null_bits in
+    match%bitstring bits with
+    | {| null_bits : nb_null_bits : bitstring;
+        rest : length_rest : bitstring |} -> (
           let list_null_fields = null_bytes null_bits in
           (* the first two bits are reserved *)
           let list_null_fields = 
@@ -167,8 +171,8 @@ let raw_data_packet list_field_packet type_sent count_rows bits =
         let null_value = ref false in
         let () =
           if (Bitstring.bitstring_length !data >= 8) then (
-            bitmatch !data with
-            | { test : 1*8 : int, unsigned, bigendian } -> (
+            match%bitstring !data with
+            | {| test : 1*8 : int, unsigned, bigendian |} -> (
                 if (test = 251) then 
                   null_value := true
               )
@@ -176,9 +180,10 @@ let raw_data_packet list_field_packet type_sent count_rows bits =
         in
         let (v, rest) =
           if !null_value then (
-            bitmatch !data with
-            | { _ : 1*8 : int, unsigned, bigendian;
-                rest : -1 : bitstring } -> (Row_data_null, rest)
+            let length_rest = (Bitstring.bitstring_length !data) - 8 in
+            match%bitstring !data with
+            | {| _ : 1*8 : int, unsigned, bigendian;
+                rest : length_rest : bitstring |} -> (Row_data_null, rest)
           ) else (
             let (v, rest) = Mp_string.length_coded_string !data in
             (Row_data_data v, rest)

@@ -1,3 +1,4 @@
+open Mysql_protocol
 
 let try_query ~f ~sql = 
   try

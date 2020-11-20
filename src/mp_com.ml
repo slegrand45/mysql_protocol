@@ -3,6 +3,7 @@ type com_type =
     Authentication (* see Mp_authentication *)
   | Init_db
   | Change_user
+  | Reset_connection
   | Query
   | Prepare
   | Execute
@@ -10,30 +11,32 @@ type com_type =
   | Close_statement
   | Ping
   | Quit
+  | Client_response_auth_switch_request_plugin_mysql_native_password
 
 let com_string statement code =
   let length = String.length statement in
-  let bits = BITSTRING {
+  let%bitstring bits = {|
       code : 1*8 : int, unsigned;
       statement : length*8 : string
-    } 
+    |}
   in
   let bits = Mp_packet.make_packet (-1) bits in
   bits
 
 let com_bitstring bits code =
-  let bits = BITSTRING {
+  let length_bits = Bitstring.bitstring_length bits in
+  let%bitstring bits = {|
       code : 1*8 : int, unsigned;
-      bits : -1 : bitstring
-    } 
+      bits : length_bits : bitstring
+    |} 
   in
   let bits = Mp_packet.make_packet (-1) bits in
   bits
 
 let com_code code =
-  let bits = BITSTRING {
+  let%bitstring bits = {|
       code : 1*8 : int, unsigned
-    } 
+    |}
   in
   let bits = Mp_packet.make_packet (-1) bits in
   bits
@@ -43,6 +46,9 @@ let com_init_db database =
 
 let com_change_user bits =
   com_bitstring bits 0x11
+
+let com_reset_connection =
+  com_code 0x1f
 
 let com_query query =
   com_string query 0x03

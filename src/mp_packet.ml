@@ -6,9 +6,9 @@ let extract_extra_packets ic _ =
   let acc_bits = ref Bitstring.empty_bitstring in
   let f () = 
     let bits = Bitstring.bitstring_of_chan_max ic 4 in
-    bitmatch bits with
-    | { packet_length : 3*8 : int, unsigned, littleendian;
-        packet_number : 1*8 : int, unsigned, bigendian } ->
+    match%bitstring bits with
+    | {| packet_length : 3*8 : int, unsigned, littleendian;
+        packet_number : 1*8 : int, unsigned, bigendian |} ->
           let bits = Bitstring.bitstring_of_chan_max ic packet_length in
           let () = length_current := packet_length in
           let () = length := !length + packet_length in
@@ -28,9 +28,9 @@ let extract_extra_packets ic _ =
 
 let extract_packet ic oc = 
   let bits = Bitstring.bitstring_of_chan_max ic 4 in
-  bitmatch bits with
-  | { packet_length : 3*8 : int, unsigned, littleendian;
-      packet_number : 1*8 : int, unsigned, bigendian } ->
+  match%bitstring bits with
+  | {| packet_length : 3*8 : int, unsigned, littleendian;
+      packet_number : 1*8 : int, unsigned, bigendian |} ->
         let () = 
           if (packet_length > Sys.max_string_length) then
             failwith "Packet length > max_string_length"
@@ -48,19 +48,20 @@ let make_packet current_num_packet bits =
   let length = Bitstring.bitstring_length bits / 8 in
   let bits_length = 
     if (length <= 16777215) then (
-      BITSTRING 
-        {
+      let%bitstring v = 
+        {|
           length : 3*8 : int, unsigned, littleendian
-        } 
+        |}
+      in v
     )
     else (
       failwith "Send packet length too big ( > 0xffffff )"
     )
   in
-  let packet = BITSTRING {
-      bits_length : -1 : bitstring;
+  let%bitstring packet = {|
+      bits_length : Bitstring.bitstring_length bits_length : bitstring;
       num : 1*8 : int, unsigned, bigendian;
-      bits : -1 : bitstring
-    } 
+      bits : Bitstring.bitstring_length bits : bitstring
+    |} 
   in
   packet

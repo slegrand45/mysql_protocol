@@ -40,12 +40,14 @@ let handshake_to_string handshake =
 
 let handshake_initialisation ic oc =
   let (packet_length, packet_number, bits) = Mp_packet.extract_packet ic oc in
-  bitmatch bits with
-  | { protocol_version : 1*8 : int, unsigned, bigendian; (* always = 10 ?? (see send_server_handshake_packet function in sql_acl.cc) *)
-      rest : -1 : bitstring } -> (
+  let length_bits = (Bitstring.bitstring_length bits) - 8 in
+  match%bitstring bits with
+  | {| protocol_version : 1*8 : int, unsigned, bigendian; (* always = 10 ?? (see send_server_handshake_packet function in sql_acl.cc) *)
+      rest : length_bits : bitstring |} -> (
         let (rest, server_version) = Mp_string.null_terminated_string rest "" in
-        bitmatch rest with
-        | { thread_id : 4*8 : int, unsigned, littleendian;
+        let length_rest = (Bitstring.bitstring_length rest) - (31*8) in
+        match%bitstring rest with
+        | {| thread_id : 4*8 : int, unsigned, littleendian;
             scramble_buff_1 : 8*8 : bitstring;
             0x00 : 1*8 : int, unsigned, bigendian;
             server_capabilities : 2*8 : bitstring;
@@ -53,17 +55,17 @@ let handshake_initialisation ic oc =
             server_status : 2*8 : int, unsigned, bigendian; 
             server_capabilities_upper : 2 * 8 : bitstring; (* server capabilities (two upper bytes) *)
             length_scramble : 1 * 8 : int, unsigned, bigendian; (* length of the scramble *)
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            0x00 : 1 * 8 : int, unsigned, bigendian;
-            rest : -1 : bitstring } ->
+            _ : 1 * 8 : int, unsigned, bigendian;
+            _ : 1 * 8 : int, unsigned, bigendian;
+            _ : 1 * 8 : int, unsigned, bigendian;
+            _ : 1 * 8 : int, unsigned, bigendian;
+            _ : 1 * 8 : int, unsigned, bigendian;
+            _ : 1 * 8 : int, unsigned, bigendian;
+            _ : 1 * 8 : int, unsigned, bigendian;
+            _ : 1 * 8 : int, unsigned, bigendian;
+            _ : 1 * 8 : int, unsigned, bigendian;
+            _ : 1 * 8 : int, unsigned, bigendian;
+            rest : length_rest : bitstring |} ->
               (* thread_id is a 4 bytes unsigned integer (AND NOT a length coded binary) *)
               let thread_id = Int64.of_int32 thread_id in
               let server_language = Mp_charset.number_charset server_language in

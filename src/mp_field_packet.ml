@@ -184,8 +184,8 @@ let decode_field_packet_field_flag bits =
   let (binary, zerofill, unsigned, blob, multiple_key, unique_key, pri_key, not_null,
        set, timestamp, auto_increment, enum) = 
     if length = 2*8 then
-      bitmatch bits with
-      | { binary : 1;
+      match%bitstring bits with
+      | {| binary : 1;
           zerofill : 1;
           unsigned : 1;
           blob : 1;
@@ -201,12 +201,12 @@ let decode_field_packet_field_flag bits =
           timestamp : 1;
           auto_increment : 1;
           enum : 1
-        } ->
+        |} ->
           (binary, zerofill, unsigned, blob, multiple_key, unique_key, pri_key, not_null,
             set, timestamp, auto_increment, enum)
     else if length = 1*8 then
-      bitmatch bits with
-      | { binary : 1;
+      match%bitstring bits with
+      | {| binary : 1;
           zerofill : 1;
           unsigned : 1;
           blob : 1;
@@ -214,7 +214,7 @@ let decode_field_packet_field_flag bits =
           unique_key : 1;
           pri_key : 1;
           not_null : 1
-        } ->
+        |} ->
           (binary, zerofill, unsigned, blob, multiple_key, unique_key, pri_key, not_null,
             false, false, false, false)
     else 
@@ -245,8 +245,9 @@ let field_packet acc ic oc =
       let (org_table, rest) = Mp_string.length_coded_string rest in
       let (name, rest) = Mp_string.length_coded_string rest in
       let (org_name, rest) = Mp_string.length_coded_string rest in
-      bitmatch rest with 
-      | { _ : 1*8 : int, unsigned, bigendian; (* filler *)
+      let length_rest = (Bitstring.bitstring_length rest) - ((9*8) + Mp_bitstring.compute32) in
+      match%bitstring rest with 
+      | {| _ : 1*8 : int, unsigned, bigendian; (* filler *)
           charset_number : 2*8 : int, unsigned, littleendian;
           length : Mp_bitstring.compute32 : int, unsigned, littleendian;
           field_type : 1*8 : int, unsigned, bigendian;
@@ -254,7 +255,7 @@ let field_packet acc ic oc =
           decimals : 1*8 : int, unsigned, bigendian;
           0x00 : 1*8 : int, unsigned, bigendian;
           0x00 : 1*8 : int, unsigned, bigendian;
-          rest : -1 : bitstring } -> (
+          rest : length_rest : bitstring |} -> (
             let (default, _) = 
               if (Bitstring.bitstring_length rest > 0) then 
                 Mp_binary.length_coded_binary rest
@@ -282,28 +283,32 @@ let field_packet acc ic oc =
 	      see protocol.cc files in MySQL source code *)
       let (field_table, rest) = Mp_string.length_coded_string bits in
       let (field_name, rest) = Mp_string.length_coded_string rest in
-      bitmatch rest with
-      | { 3 : 1*8 : int, unsigned, bigendian;
+      let length_rest = (Bitstring.bitstring_length rest) - (7*8) in
+      match%bitstring rest with
+      | {| 3 : 1*8 : int, unsigned, bigendian;
           length : 3*8 : int, unsigned, littleendian;
           1: 1*8 : int, unsigned, bigendian;
           field_type : 1*8 : int, unsigned, bigendian;
           head_flags : 1*8 : int, unsigned, bigendian;
-          rest : -1 : bitstring } ->
+          rest : length_rest : bitstring |} ->
             let (flags, rest) = 
               if (head_flags = 2) then
-                bitmatch rest with
-                | { flags : 1*8 : bitstring;
-                    rest : -1 : bitstring } -> (flags, rest)
-              else if (head_flags = 3) then 
-                bitmatch rest with 
-                | { flags : 2*8 : bitstring;
-                    rest : -1 : bitstring } -> (flags, rest)
+                let length_rest = (Bitstring.bitstring_length rest) - 8 in
+                match%bitstring rest with
+                | {| flags : 1*8 : bitstring;
+                    rest : length_rest : bitstring |} -> (flags, rest)
+              else if (head_flags = 3) then
+                let length_rest = (Bitstring.bitstring_length rest) - (2*8) in
+                match%bitstring rest with 
+                | {| flags : 2*8 : bitstring;
+                    rest : length_rest : bitstring |} -> (flags, rest)
               else
                 failwith (Printf.sprintf "Bad head_flags = %u in field packet" head_flags)
             in
-            bitmatch rest with 
-            | { decimals : 1*8 : int, unsigned, bigendian;
-                rest : -1 : bitstring } -> (
+            let length_rest = (Bitstring.bitstring_length rest) - 8 in
+            match%bitstring rest with 
+            | {| decimals : 1*8 : int, unsigned, bigendian;
+                rest : length_rest : bitstring |} -> (
                   let (default, _) = 
                     if Bitstring.bitstring_length rest > 0 then 
                       Mp_binary.length_coded_binary rest 

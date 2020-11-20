@@ -50,21 +50,22 @@ let client_authentication_packet ~handshake ~capabilities ~max_packet_size ~char
 
   (* TODO (?): check CLIENT_CONNECT_WITH_DB is set in flags *)
   let db = Bitstring.bitstring_of_string (Mp_string.make_null_terminated_string databasename) in
+  let length_db = Bitstring.bitstring_length db in
 
   (* TODO (?): check CLIENT_PLUGIN_AUTH is set in flags *)
   let plugin = Mp_string.make_null_terminated_string auth_plugin_name in
   let length_plugin = String.length plugin in
 
-  let bits = BITSTRING {
+  let%bitstring bits = {|
       client_flags : Mp_bitstring.compute32 : int, unsigned, littleendian;
       max_packet_size : Mp_bitstring.compute32 : int, unsigned, bigendian;
       charset_number : 1*8 : int, unsigned, bigendian;
       filler : 23*8 : bitstring;
       user : length_user*8 : string;
       credential : length_credential*8 : string;
-      db : -1 : bitstring;
+      db : length_db : bitstring;
       plugin : length_plugin*8 : string
-    }
+    |}
   in 
   let bits = Bitstring.concat [bits; db] in
   let bits = Mp_packet.make_packet handshake.Mp_handshake.packet_number bits in

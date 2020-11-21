@@ -21,6 +21,6 @@
   unix
   cryptokit
   oUnit
-  bitstring
-  ppx_bitstring
+  (bitstring (>= 4.0.1))
+  (ppx_bitstring (>= 4.1.0))
 ))

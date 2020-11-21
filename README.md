@@ -29,6 +29,18 @@ opam install mysql_protocol
 [client]: https://github.com/slegrand45/mysql_protocol/blob/master/src/mp_client.mli
 [data]: https://github.com/slegrand45/mysql_protocol/blob/master/src/mp_data.mli
 
+## How to build
+
+### Building the project
+```
+dune build
+```
+
+### Building the documentation
+```
+dune build @doc
+```
+
 ## Copyright
 
 Copyright (C) 2011-2020, Stephane Legrand.

@@ -7,19 +7,20 @@
 \usepackage[sc]{mathpazo}
 \linespread{1.05}
 
-\usepackage{courier}
+\usepackage{tgpagella}
 
 \usepackage[svgnames]{xcolor}
 
 \usepackage{minted}
 \usemintedstyle{perldoc}
+\setminted[ocaml]{frame=leftline}
 
 \usepackage{hyperref}
 
 \usepackage{microtype}
 
 \newcommand{\email}[1]{\href{mailto:#1}{\nolinkurl{#1}}}
-\newcommand{\warningbox}[1]{ {\centering\fcolorbox{SaddleBrown}{NavajoWhite}{\begin{minipage}[t]{0.97 \linewidth}{ \textbf{WARNING}: #1 }\end{minipage}}} }
+\newcommand{\warningbox}[1]{ {\centering\fcolorbox{SaddleBrown}{cyan!5}{\begin{minipage}[t]{0.97 \linewidth}{ \textbf{WARNING}: #1 }\end{minipage}}} }
 
 \begin{document}
 
@@ -28,7 +29,7 @@
 \maketitle
 
 \begin{abstract}
-This tutorial illustrates the use of the MySQL Protocol library, a native OCaml implementation of the MySQL client protocol.
+This tutorial illustrates the use of the MySQL Protocol library, a native OCaml implementation of the MySQL/MariaDB client protocol.
 
 You can install this library with \href[]{http://opam.ocaml.org/packages/}{OPAM}.
 The source code is available in \href[]{https://github.com/slegrand45/mysql_protocol}{the MySQL Protocol home page}.
@@ -42,23 +43,19 @@ The source code is available in \href[]{https://github.com/slegrand45/mysql_prot
 
 \section{Introduction}
 
-The library has to be installed before using the code below. Please use the OPAM package manager or read the INSTALL file in the library archive. The OCaml source code of this tutorial is available in the \textit{examples} directory.
+The library has to be installed before using the code below. Please use the OPAM package manager. The OCaml source code of this tutorial is available in the \textit{examples} directory.
 
 \section{Modules}
 
 First, some convenient alias for the modules used.
 
-%\begin{minted}{ocaml}
 \begin{minted}{ocaml}
 module Mp_client = Mysql_protocol.Mp_client
 module Mp_data = Mysql_protocol.Mp_data
 module Mp_execute = Mysql_protocol.Mp_execute
-module Mp_result_set_packet =
-  Mysql_protocol.Mp_result_set_packet
-module Mp_capabilities =
-  Mysql_protocol.Mp_capabilities
+module Mp_result_set_packet = Mysql_protocol.Mp_result_set_packet
+module Mp_capabilities = Mysql_protocol.Mp_capabilities
 \end{minted}
-%\end{minted}
 
 \section{Helper functions}
 
@@ -78,7 +75,7 @@ let print_row fields row =
   let print_data f = 
     let (field_name, field_pos) = f in
     let data = List.nth row field_pos in
-    print_endline ("  " ^ field_name ^ ": " 
+    print_endline ("  " ^ field_name ^ ": "
       ^ (Mp_data.to_string data))
   in
   let () = List.iter print_data fields in
@@ -87,8 +84,7 @@ let print_row fields row =
 let print_set sql r = 
   let (fields, rows) = r.Mp_result_set_packet.rows in
   let () = print_endline (
-    "Result set for the SQL statement \"" 
-    ^ sql ^ "\": \n") in
+    "Result set for the SQL statement \"" ^ sql ^ "\": \n") in
   let print_rows =   
     let () = List.iter (print_row fields) rows in
     print_newline ()
@@ -98,19 +94,20 @@ let print_set sql r =
 
 \section{Configuration}
 
-To be able to connect to the MySQL server, we first have to configure the client.
+To be able to connect to the database server, we first have to configure the client.
 
 \begin{minted}{ocaml}
 let addr = Unix.inet_addr_loopback
 let port = 3306
 let sockaddr = Unix.ADDR_INET(addr, port)
+(* let sockaddr = Unix.ADDR_UNIX "/path/to/file.sock" in *)
 
 let db_user = "user_ocaml_ocmp"
 let db_password = "ocmp"
 let db_name = "test_ocaml_ocmp_utf8"
 \end{minted}
 
-The MySQL server is listening on the loopback interface and it uses the standard MySQL server port. The login to authenticate to the server is "user\_ocaml\_ocmp" with the password "ocmp". And we will use the "test\_ocaml\_ocmp\_utf8" database.
+The database server is listening on the loopback interface and it uses the standard port. The login to authenticate to the server is "user\_ocaml\_ocmp" with the password "ocmp". And we will use the "test\_ocaml\_ocmp\_utf8" database.
 
 Now, we can create a configuration.
 
@@ -133,7 +130,7 @@ To have the complete list of available charset and collation, you can read the d
 
 \section{Connection}
 
-Now, we can connect our client to the MySQL server.
+Now, we can connect our client to the database server.
 
 \begin{minted}{ocaml}
 let connection = Mp_client.connect 
@@ -167,11 +164,10 @@ A non prepared statement is the simplest way to send a statement to the server. 
 The first step is to create the statement from the SQL string.
 
 \begin{minted}{ocaml}
-let sql = 
+let sql =
   "INSERT INTO ocmp_table (col1, col2) VALUES ('col1', 123.45)"
 in
-let stmt = Mp_client.create_statement_from_string
-  sql in
+let stmt = Mp_client.create_statement_from_string sql in
 \end{minted}
 
 \subsection{Execute}
@@ -219,7 +215,7 @@ let () = print_set sql r in
 
 \section{Prepared statement}
 
-Especially when the statement includes some parameters, you should use a prepared statement. The parameters values will then be correctly enclosed in the statement by the MySQL server and all special characters will be automatically escaped. You can of course also use a prepared statement even if the statement doesn't have any parameter.
+Especially when the statement includes some parameters, you should use a prepared statement. The parameters values will then be correctly enclosed in the statement by the database server and all special characters will be automatically escaped. You can of course also use a prepared statement even if the statement doesn't have any parameter.
 
 \subsection{Create}
 
@@ -256,7 +252,7 @@ let r = Mp_client.execute ~connection:connection
 
 \subsubsection{With parameters}
 
-If you have some parameters in the statement, you first need to create the list of these parameters in the same order of appearance as in the statement. Please see the documentation for the \texttt{Mp\_data} module to have a complete list of data constructor and learn which one to use for each MySQL column types.
+If you have some parameters in the statement, you first need to create the list of these parameters in the same order of appearance as in the statement. Please see the documentation for the \texttt{Mp\_data} module to have a complete list of data constructor and learn which one to use for each column types.
 
 \begin{minted}{ocaml}
 let params = [
@@ -329,9 +325,11 @@ let () =
     while true do
       let rows = Mp_client.fetch
         ~connection:connection 
-        ~statement:stmt () in
+        ~statement:stmt ()
+      in
       let rows = Mp_client.get_fetch_result_set
-        rows in
+        rows
+      in
       print_set sql rows
     done
   with
@@ -354,10 +352,10 @@ First we create the stored procedure after checking if it was already defined.
 
 \begin{minted}{ocaml}
 let sql = "DROP PROCEDURE IF EXISTS ocmp_proc" in
-let stmt = Mp_client.create_statement_from_string 
-  sql in
+let stmt = Mp_client.create_statement_from_string sql in
 let _ = Mp_client.execute ~connection:connection 
-  ~statement:stmt () in 
+  ~statement:stmt ()
+in 
 let sql = 
   "CREATE PROCEDURE ocmp_proc() "
   ^ "BEGIN SELECT * FROM ocmp_table; END"
@@ -365,7 +363,8 @@ in
 let stmt = Mp_client.create_statement_from_string 
   sql in
 let r = Mp_client.execute ~connection:connection 
-  ~statement:stmt () in
+  ~statement:stmt ()
+in
 let r = Mp_client.get_result r in
 let r = Mp_client.get_result_ok r in
 let () = print_result sql r in
@@ -378,21 +377,23 @@ Next we call the stored procedure. The result type of \texttt{execute()} is \tex
 \begin{minted}{ocaml}
 let sql = "CALL ocmp_proc()" in
 let stmt = Mp_client.create_statement_from_string
-  sql in
+  sql
+in
 let r = Mp_client.execute ~connection:connection 
-  ~statement:stmt () in
+  ~statement:stmt ()
+in
 let r = Mp_client.get_result_multiple r in
 let f e =
-    try
-      let rs = Mp_client.get_result_set e in
-      print_set sql rs
-    with
-    | Failure _ ->
-        let rs = Mp_client.get_result_ok e in
-        let affected_rows = rs.Mp_client.affected_rows in
-        print_endline (Printf.sprintf
-          "Result OK: affected rows=%Ld" affected_rows)
-  in
+  try
+    let rs = Mp_client.get_result_set e in
+    print_set sql rs
+  with
+  | Failure _ ->
+      let rs = Mp_client.get_result_ok e in
+      let affected_rows = rs.Mp_client.affected_rows in
+      print_endline (Printf.sprintf
+        "Result OK: affected rows=%Ld" affected_rows)
+in
 let () = List.iter f r in
 \end{minted}
 
@@ -404,9 +405,31 @@ To avoid a timeout or to test the connection, you can send a ping to the server.
 let () = Mp_client.ping ~connection:connection in
 \end{minted}
 
+\section{Change user}
+
+Connect to the same server with a different user and/or database.
+
+\begin{minted}{ocaml}
+let _ = Mp_client.change_user
+  ~connection:connection
+  ~user:"db_user"
+  ~password:"db_password"
+  ~databasename:"db_name" ()
+in
+\end{minted}
+
+\section{Reset connection}
+
+Reset connection without re-authentication. This is useful if you need to destroy the session context (temporary tables, session variables, etc.) in the database server.
+
+\begin{minted}{ocaml}
+let () = Mp_client.reset_connection
+  ~connection:connection in
+\end{minted}
+
 \section{Reset the session}
 
-This is useful if you need to destroy the session context (temporary tables, session variables, etc.) in the MySQL server.
+Disconnect and reconnect.
 
 \begin{minted}{ocaml}
 let () = Mp_client.reset_session 
@@ -415,20 +438,20 @@ let () = Mp_client.reset_session
 
 \section{Catching errors}
 
-Whenever the MySQL server returns an error, an \texttt{Mp\_client.Error} exception is raised.
+Whenever the database server returns an error, an \texttt{Mp\_client.Error} exception is raised.
 
 \begin{minted}{ocaml}
 let stmt = Mp_client.create_statement_from_string 
   ("BAD SQL QUERY") in
 let () =
   try
-    let stmt = Mp_client.execute
+    let _ = Mp_client.execute
       ~connection:connection ~statement:stmt () in 
     ()
   with
   | Mp_client.Error error ->
       print_newline ();
-      print_endline ("Catch MySQL error, exception is: " 
+      print_endline ("Catch error, exception is: " 
         ^ (Mp_client.error_exception_to_string error))
 in
 \end{minted}

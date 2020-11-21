@@ -15,6 +15,7 @@
  (name mysql_protocol)
  (synopsis "OCaml implementation of the native MySQL/MariaDB Protocol with the Bitstring library")
  (depends
+  num
   (dune (>= 2.7))
   (ocaml (>= 4.10.0))
   cryptokit

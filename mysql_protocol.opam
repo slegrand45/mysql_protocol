@@ -9,6 +9,7 @@ license: "LGPL-3.0-or-later"
 homepage: "https://github.com/slegrand45/mysql_protocol"
 bug-reports: "https://github.com/slegrand45/mysql_protocol/issues"
 depends: [
+  "num"
   "dune" {>= "2.7" & >= "2.7"}
   "ocaml" {>= "4.10.0"}
   "cryptokit"

@@ -14,6 +14,7 @@
     - MySQL 5.1.69 server (64 bits) - FreeBSD -stable.
     - MySQL 5.5.31 server (64 bits) - FreeBSD -stable.
     - MySQL 5.6.26 server (64 bits) - FreeBSD -stable.
+    - MariaDB 10.5.6 server (64 bits) - FreeBSD -stable.
 
     The following functionalities are not implemented:
     - Master/slave.

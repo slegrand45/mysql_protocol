@@ -1,10 +1,19 @@
+# OCaml mysql_protocol library
+
 [![Build Status](https://travis-ci.org/slegrand45/mysql_protocol.svg?branch=master)](https://travis-ci.org/slegrand45/mysql_protocol)
 
-
-mysql_protocol
-==============
-
 OCaml implementation of the native MySQL Protocol with the Bitstring library.
+
+## How to install
+```
+opam install mysql_protocol
+```
+
+## Documentation
+
+- [Examples][examples].
+
+[examples]: https://github.com/slegrand45/mysql_protocol/tree/master/examples/
 
 - [Tutorial][tutorial].
 
@@ -19,3 +28,7 @@ OCaml implementation of the native MySQL Protocol with the Bitstring library.
 [charset]: https://github.com/slegrand45/mysql_protocol/blob/master/src/mp_charset.mli
 [client]: https://github.com/slegrand45/mysql_protocol/blob/master/src/mp_client.mli
 [data]: https://github.com/slegrand45/mysql_protocol/blob/master/src/mp_data.mli
+
+## Copyright
+
+Copyright (C) 2011-2020, Stephane Legrand.

@@ -17,10 +17,8 @@
  (depends
   (dune (>= 2.7))
   (ocaml (>= 4.10.0))
-  num
-  unix
   cryptokit
-  oUnit
+  (oUnit :with-test)
   (bitstring (>= 4.0.1))
   (ppx_bitstring (>= 4.1.0))
 ))

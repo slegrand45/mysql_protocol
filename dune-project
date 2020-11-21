@@ -20,5 +20,5 @@
   cryptokit
   (oUnit :with-test)
   (bitstring (>= 4.0.1))
-  (ppx_bitstring (>= 4.1.0))
+  (ppx_bitstring (>= 4.0.1))
 ))

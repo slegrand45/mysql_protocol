@@ -27,9 +27,9 @@ let print_set sql r =
 
 let run() = 
   try
-    let addr = Bench_config.addr in
-    let port = Bench_config.port in
-    let sockaddr = Unix.ADDR_INET(addr, port) in
+    (* let addr = Bench_config.addr in
+    let port = Bench_config.port in *)
+    let sockaddr = Bench_config.sockaddr in
     let db_user = Bench_config.db_user in
     let db_password = Bench_config.db_password in
     let db_name = Bench_config.db_name in

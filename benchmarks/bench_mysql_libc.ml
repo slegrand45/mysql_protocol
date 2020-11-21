@@ -36,12 +36,12 @@ let build_set_from_prepare r =
 let run() = 
 
   let conf = {
-    Mysql.dbhost = Some Bench_config.host;
-    Mysql.dbname = Some Bench_config.db_name;
-    Mysql.dbport = Some Bench_config.port;
+    Mysql.dbhost = None;
+    Mysql.dbname = None;
+    Mysql.dbport = None;
     Mysql.dbpwd = Some Bench_config.db_password;
     Mysql.dbuser = Some Bench_config.db_user;
-    Mysql.dbsocket = None;
+    Mysql.dbsocket = Some Bench_config.sockaddr;
   } in
 
   let db = Mysql.connect ~options:[] conf in

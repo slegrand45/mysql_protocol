@@ -6,9 +6,9 @@
      {{:http://www.gnu.org/licenses/lgpl.html} LGPL license version 3}.
 
     External dependencies:
-    - {{:http://code.google.com/p/bitstring/} Bitstring}.
-    - {{:http://forge.ocamlcore.org/projects/cryptokit/} Cryptokit}.
-    - optional: {{:http://ounit.forge.ocamlcore.org/} oUnit } (to run the tests suite).
+    - {{:https://github.com/xguerin/bitstring/} Bitstring}.
+    - {{:https://github.com/xavierleroy/cryptokit/} Cryptokit}.
+    - optional: {{:https://github.com/gildor478/ounit/} oUnit } (to run the tests suite).
 
     Tested configurations:
     - MySQL 5.1.69 server (64 bits) - FreeBSD -stable.

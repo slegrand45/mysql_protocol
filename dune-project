@@ -19,7 +19,7 @@
   (dune (>= 2.7))
   (ocaml (>= 4.10.0))
   cryptokit
-  (oUnit :with-test)
+  (ounit2 :with-test)
   (bitstring (>= 4.0.1))
   (ppx_bitstring (>= 4.0.1))
 ))

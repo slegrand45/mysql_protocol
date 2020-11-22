@@ -14,6 +14,7 @@
 (package
  (name mysql_protocol)
  (synopsis "OCaml implementation of the native MySQL/MariaDB Protocol with the Bitstring library")
+ (description "This library allows you to access the functionality provided by MySQL or MariaDB")
  (depends
   num
   (dune (>= 2.7))

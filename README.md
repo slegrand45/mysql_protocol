@@ -21,7 +21,7 @@ opam install mysql_protocol
 
 - [OCamldoc generated documentation][ocamldoc].
 
-[ocamldoc]: http://slegrand45.github.io/mysql_protocol.site/
+[ocamldoc]: http://slegrand45.github.io/mysql_protocol.site/mysql_protocol/Mysql_protocol/Mp_client/
 
 - Interfaces: [client][client], [data conversion][data], [charsets][charset].
 

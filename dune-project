@@ -17,7 +17,7 @@
  (depends
   num
   (dune (>= 2.7))
-  (ocaml (>= 4.10.0))
+  (ocaml (>= 4.09.0))
   cryptokit
   (ounit2 :with-test)
   (bitstring (>= 4.0.1))

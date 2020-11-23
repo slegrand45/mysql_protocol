@@ -17,7 +17,6 @@
  (description "This library allows you to access the functionality provided by MySQL or MariaDB")
  (depends
   num
-  (dune (>= 2.7))
   (ocaml (>= 4.09.0))
   cryptokit
   (ounit2 :with-test)

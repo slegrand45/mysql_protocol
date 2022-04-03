@@ -1,3 +1,7 @@
+## v3.0.2 (2022-04-03)
+- Update charsets and collations
+- Unbreak benchmark build 
+
 ## v3.0.1 (2020-11-22)
 - OPAM linting
 

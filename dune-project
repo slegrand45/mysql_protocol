@@ -2,7 +2,7 @@
 
 (name mysql_protocol)
 
-(version 3.0)
+(version 3.0.2)
 
 (generate_opam_files true)
 

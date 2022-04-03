@@ -2,9 +2,10 @@
    Available charset and collation.
 *)
 
-type charset_name = 
+type charset_name =
     Armscii8
   | Ascii
+  | Big5
   | Binary_charset (* /!\ : renamed to avoid conflict with binary collation *)
   | Cp1250
   | Cp1251
@@ -13,7 +14,12 @@ type charset_name =
   | Cp850
   | Cp852
   | Cp866
+  | Cp932
   | Dec8
+  | Eucjpms
+  | Euckr
+  | Gb2312
+  | Gbk
   | Geostd8
   | Greek
   | Hebrew
@@ -27,95 +33,340 @@ type charset_name =
   | Latin7
   | Macce
   | Macroman
+  | Sjis
   | Swe7
+  | Tis620
+  | Ucs2
+  | Ujis
+  | Utf16
+  | Utf16le
+  | Utf32
   | Utf8
+  | Utf8mb4
 
 type collation_name =
     Armscii8_bin
   | Armscii8_general_ci
+  | Armscii8_general_nopad_ci
+  | Armscii8_nopad_bin
   | Ascii_bin
   | Ascii_general_ci
+  | Ascii_general_nopad_ci
+  | Ascii_nopad_bin
+  | Big5_bin
+  | Big5_chinese_ci
+  | Big5_chinese_nopad_ci
+  | Big5_nopad_bin
   | Binary_collation (* /!\ : renamed to avoid conflict with binary charset *)
   | Cp1250_bin
   | Cp1250_croatian_ci
+  | Cp1250_czech_cs
   | Cp1250_general_ci
+  | Cp1250_general_nopad_ci
+  | Cp1250_nopad_bin
+  | Cp1250_polish_ci
   | Cp1251_bin
   | Cp1251_bulgarian_ci
   | Cp1251_general_ci
   | Cp1251_general_cs
+  | Cp1251_general_nopad_ci
+  | Cp1251_nopad_bin
   | Cp1251_ukrainian_ci
   | Cp1256_bin
   | Cp1256_general_ci
+  | Cp1256_general_nopad_ci
+  | Cp1256_nopad_bin
   | Cp1257_bin
   | Cp1257_general_ci
+  | Cp1257_general_nopad_ci
   | Cp1257_lithuanian_ci
+  | Cp1257_nopad_bin
   | Cp850_bin
   | Cp850_general_ci
+  | Cp850_general_nopad_ci
+  | Cp850_nopad_bin
   | Cp852_bin
   | Cp852_general_ci
+  | Cp852_general_nopad_ci
+  | Cp852_nopad_bin
   | Cp866_bin
   | Cp866_general_ci
+  | Cp866_general_nopad_ci
+  | Cp866_nopad_bin
+  | Cp932_bin
+  | Cp932_japanese_ci
+  | Cp932_japanese_nopad_ci
+  | Cp932_nopad_bin
   | Dec8_bin
+  | Dec8_nopad_bin
   | Dec8_swedish_ci
+  | Dec8_swedish_nopad_ci
+  | Eucjpms_bin
+  | Eucjpms_japanese_ci
+  | Eucjpms_japanese_nopad_ci
+  | Eucjpms_nopad_bin
+  | Euckr_bin
+  | Euckr_korean_ci
+  | Euckr_korean_nopad_ci
+  | Euckr_nopad_bin
+  | Gb2312_bin
+  | Gb2312_chinese_ci
+  | Gb2312_chinese_nopad_ci
+  | Gb2312_nopad_bin
+  | Gbk_bin
+  | Gbk_chinese_ci
+  | Gbk_chinese_nopad_ci
+  | Gbk_nopad_bin
   | Geostd8_bin
   | Geostd8_general_ci
+  | Geostd8_general_nopad_ci
+  | Geostd8_nopad_bin
   | Greek_bin
   | Greek_general_ci
+  | Greek_general_nopad_ci
+  | Greek_nopad_bin
   | Hebrew_bin
   | Hebrew_general_ci
+  | Hebrew_general_nopad_ci
+  | Hebrew_nopad_bin
   | Hp8_bin
   | Hp8_english_ci
+  | Hp8_english_nopad_ci
+  | Hp8_nopad_bin
   | Keybcs2_bin
   | Keybcs2_general_ci
+  | Keybcs2_general_nopad_ci
+  | Keybcs2_nopad_bin
   | Koi8r_bin
   | Koi8r_general_ci
+  | Koi8r_general_nopad_ci
+  | Koi8r_nopad_bin
   | Koi8u_bin
   | Koi8u_general_ci
+  | Koi8u_general_nopad_ci
+  | Koi8u_nopad_bin
   | Latin1_bin
   | Latin1_danish_ci
   | Latin1_general_ci
   | Latin1_general_cs
   | Latin1_german1_ci
   | Latin1_german2_ci
+  | Latin1_nopad_bin
   | Latin1_spanish_ci
   | Latin1_swedish_ci
+  | Latin1_swedish_nopad_ci
   | Latin2_bin
   | Latin2_croatian_ci
+  | Latin2_czech_cs
   | Latin2_general_ci
+  | Latin2_general_nopad_ci
   | Latin2_hungarian_ci
+  | Latin2_nopad_bin
   | Latin5_bin
+  | Latin5_nopad_bin
   | Latin5_turkish_ci
+  | Latin5_turkish_nopad_ci
   | Latin7_bin
   | Latin7_estonian_cs
   | Latin7_general_ci
   | Latin7_general_cs
+  | Latin7_general_nopad_ci
+  | Latin7_nopad_bin
   | Macce_bin
   | Macce_general_ci
+  | Macce_general_nopad_ci
+  | Macce_nopad_bin
   | Macroman_bin
   | Macroman_general_ci
+  | Macroman_general_nopad_ci
+  | Macroman_nopad_bin
+  | Sjis_bin
+  | Sjis_japanese_ci
+  | Sjis_japanese_nopad_ci
+  | Sjis_nopad_bin
   | Swe7_bin
+  | Swe7_nopad_bin
   | Swe7_swedish_ci
+  | Swe7_swedish_nopad_ci
+  | Tis620_bin
+  | Tis620_nopad_bin
+  | Tis620_thai_ci
+  | Tis620_thai_nopad_ci
+  | Ucs2_bin
+  | Ucs2_croatian_ci
+  | Ucs2_croatian_mysql561_ci
+  | Ucs2_czech_ci
+  | Ucs2_danish_ci
+  | Ucs2_esperanto_ci
+  | Ucs2_estonian_ci
+  | Ucs2_general_ci
+  | Ucs2_general_mysql500_ci
+  | Ucs2_general_nopad_ci
+  | Ucs2_german2_ci
+  | Ucs2_hungarian_ci
+  | Ucs2_icelandic_ci
+  | Ucs2_latvian_ci
+  | Ucs2_lithuanian_ci
+  | Ucs2_myanmar_ci
+  | Ucs2_nopad_bin
+  | Ucs2_persian_ci
+  | Ucs2_polish_ci
+  | Ucs2_romanian_ci
+  | Ucs2_roman_ci
+  | Ucs2_sinhala_ci
+  | Ucs2_slovak_ci
+  | Ucs2_slovenian_ci
+  | Ucs2_spanish2_ci
+  | Ucs2_spanish_ci
+  | Ucs2_swedish_ci
+  | Ucs2_thai_520_w2
+  | Ucs2_turkish_ci
+  | Ucs2_unicode_520_ci
+  | Ucs2_unicode_520_nopad_ci
+  | Ucs2_unicode_ci
+  | Ucs2_unicode_nopad_ci
+  | Ucs2_vietnamese_ci
+  | Ujis_bin
+  | Ujis_japanese_ci
+  | Ujis_japanese_nopad_ci
+  | Ujis_nopad_bin
+  | Utf16le_bin
+  | Utf16le_general_ci
+  | Utf16le_general_nopad_ci
+  | Utf16le_nopad_bin
+  | Utf16_bin
+  | Utf16_croatian_ci
+  | Utf16_croatian_mysql561_ci
+  | Utf16_czech_ci
+  | Utf16_danish_ci
+  | Utf16_esperanto_ci
+  | Utf16_estonian_ci
+  | Utf16_general_ci
+  | Utf16_general_nopad_ci
+  | Utf16_german2_ci
+  | Utf16_hungarian_ci
+  | Utf16_icelandic_ci
+  | Utf16_latvian_ci
+  | Utf16_lithuanian_ci
+  | Utf16_myanmar_ci
+  | Utf16_nopad_bin
+  | Utf16_persian_ci
+  | Utf16_polish_ci
+  | Utf16_romanian_ci
+  | Utf16_roman_ci
+  | Utf16_sinhala_ci
+  | Utf16_slovak_ci
+  | Utf16_slovenian_ci
+  | Utf16_spanish2_ci
+  | Utf16_spanish_ci
+  | Utf16_swedish_ci
+  | Utf16_thai_520_w2
+  | Utf16_turkish_ci
+  | Utf16_unicode_520_ci
+  | Utf16_unicode_520_nopad_ci
+  | Utf16_unicode_ci
+  | Utf16_unicode_nopad_ci
+  | Utf16_vietnamese_ci
+  | Utf32_bin
+  | Utf32_croatian_ci
+  | Utf32_croatian_mysql561_ci
+  | Utf32_czech_ci
+  | Utf32_danish_ci
+  | Utf32_esperanto_ci
+  | Utf32_estonian_ci
+  | Utf32_general_ci
+  | Utf32_general_nopad_ci
+  | Utf32_german2_ci
+  | Utf32_hungarian_ci
+  | Utf32_icelandic_ci
+  | Utf32_latvian_ci
+  | Utf32_lithuanian_ci
+  | Utf32_myanmar_ci
+  | Utf32_nopad_bin
+  | Utf32_persian_ci
+  | Utf32_polish_ci
+  | Utf32_romanian_ci
+  | Utf32_roman_ci
+  | Utf32_sinhala_ci
+  | Utf32_slovak_ci
+  | Utf32_slovenian_ci
+  | Utf32_spanish2_ci
+  | Utf32_spanish_ci
+  | Utf32_swedish_ci
+  | Utf32_thai_520_w2
+  | Utf32_turkish_ci
+  | Utf32_unicode_520_ci
+  | Utf32_unicode_520_nopad_ci
+  | Utf32_unicode_ci
+  | Utf32_unicode_nopad_ci
+  | Utf32_vietnamese_ci
+  | Utf8mb4_bin
+  | Utf8mb4_croatian_ci
+  | Utf8mb4_croatian_mysql561_ci
+  | Utf8mb4_czech_ci
+  | Utf8mb4_danish_ci
+  | Utf8mb4_esperanto_ci
+  | Utf8mb4_estonian_ci
+  | Utf8mb4_general_ci
+  | Utf8mb4_general_nopad_ci
+  | Utf8mb4_german2_ci
+  | Utf8mb4_hungarian_ci
+  | Utf8mb4_icelandic_ci
+  | Utf8mb4_latvian_ci
+  | Utf8mb4_lithuanian_ci
+  | Utf8mb4_myanmar_ci
+  | Utf8mb4_nopad_bin
+  | Utf8mb4_persian_ci
+  | Utf8mb4_polish_ci
+  | Utf8mb4_romanian_ci
+  | Utf8mb4_roman_ci
+  | Utf8mb4_sinhala_ci
+  | Utf8mb4_slovak_ci
+  | Utf8mb4_slovenian_ci
+  | Utf8mb4_spanish2_ci
+  | Utf8mb4_spanish_ci
+  | Utf8mb4_swedish_ci
+  | Utf8mb4_thai_520_w2
+  | Utf8mb4_turkish_ci
+  | Utf8mb4_unicode_520_ci
+  | Utf8mb4_unicode_520_nopad_ci
+  | Utf8mb4_unicode_ci
+  | Utf8mb4_unicode_nopad_ci
+  | Utf8mb4_vietnamese_ci
   | Utf8_bin
+  | Utf8_croatian_ci
+  | Utf8_croatian_mysql561_ci
   | Utf8_czech_ci
   | Utf8_danish_ci
   | Utf8_esperanto_ci
   | Utf8_estonian_ci
   | Utf8_general_ci
+  | Utf8_general_mysql500_ci
+  | Utf8_general_nopad_ci
+  | Utf8_german2_ci
   | Utf8_hungarian_ci
   | Utf8_icelandic_ci
   | Utf8_latvian_ci
   | Utf8_lithuanian_ci
+  | Utf8_myanmar_ci
+  | Utf8_nopad_bin
   | Utf8_persian_ci
   | Utf8_polish_ci
   | Utf8_romanian_ci
   | Utf8_roman_ci
+  | Utf8_sinhala_ci
   | Utf8_slovak_ci
   | Utf8_slovenian_ci
   | Utf8_spanish2_ci
   | Utf8_spanish_ci
   | Utf8_swedish_ci
+  | Utf8_thai_520_w2
   | Utf8_turkish_ci
+  | Utf8_unicode_520_ci
+  | Utf8_unicode_520_nopad_ci
   | Utf8_unicode_ci
+  | Utf8_unicode_nopad_ci
+  | Utf8_vietnamese_ci
 
 type charset = (charset_name * collation_name);;
 

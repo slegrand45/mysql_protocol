@@ -11,7 +11,7 @@ let print_row fields row =
   let print_data f = 
     let (field_name, field_pos) = f in
     let data = List.nth row field_pos in
-    print_endline ("  " ^ field_name ^ ": " ^ (Mp_data.to_string data))
+    print_endline ("  " ^ field_name ^ ": " ^ (Option.value (Mp_data.to_string data) ~default:""))
   in
   let () = List.iter print_data fields in
   print_endline "  -- --  "
@@ -29,7 +29,7 @@ let run() =
   try
     (* let addr = Bench_config.addr in
     let port = Bench_config.port in *)
-    let sockaddr = Bench_config.sockaddr in
+    let sockaddr = Unix.ADDR_UNIX Bench_config.sockaddr in
     let db_user = Bench_config.db_user in
     let db_password = Bench_config.db_password in
     let db_name = Bench_config.db_name in

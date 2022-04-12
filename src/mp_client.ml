@@ -137,7 +137,8 @@ let connect ~configuration ?(force = false) () =
           Unix.setsockopt (Unix.descr_of_in_channel ic) Unix.TCP_NODELAY true ;
           Unix.setsockopt (Unix.descr_of_out_channel oc) Unix.TCP_NODELAY true ;
         with
-        | Unix.Unix_error (Unix.EINVAL, _, _) -> () (* can fail if sockaddr is Unix.ADDR_UNIX *)
+        | Unix.Unix_error (Unix.EINVAL, _, _)
+        | Unix.Unix_error (Unix.EOPNOTSUPP, _, _) -> () (* can fail if sockaddr is Unix.ADDR_UNIX *)
         | e -> raise e
       in
       let handshake = Mp_handshake.handshake_initialisation ic oc in

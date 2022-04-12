@@ -43,4 +43,4 @@ dune build @doc
 
 ## Copyright
 
-Copyright (C) 2011-2020, Stephane Legrand.
+Copyright (C) 2011-2022, Stephane Legrand.

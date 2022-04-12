@@ -1,3 +1,6 @@
+## v3.0.3 (2022-04-12)
+- Avoid error with UNIX socket
+
 ## v3.0.2 (2022-04-03)
 - Update charsets and collations
 - Unbreak benchmark build 
